@@ -15,8 +15,13 @@ const chatSlice = createSlice({
             state.messages = Array.isArray(action.payload) ? action.payload : [];
         },
         appendMessage: (state, action) => {
-            state.messages.push(action.payload);
-        },
+            const newMsg = action.payload;
+            const exists = state.messages.some(msg => msg._id === newMsg._id);
+            if (!exists) {
+                state.messages.push(newMsg);
+            }
+        }
+        ,
         setHasNewMessage: (state, action) => {
             state.hasNewMessage = action.payload;
         }

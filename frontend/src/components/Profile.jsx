@@ -117,7 +117,7 @@ const Profile = () => {
                 src={userProfile?.profilePicture}
                 alt="pfp"
               />
-              <AvatarFallback className="text-xl">CN</AvatarFallback>
+              <AvatarFallback className="text-xl">{userProfile?.username?.[0] || 'U'}</AvatarFallback>
             </Avatar>
           </section>
 
@@ -144,19 +144,19 @@ const Profile = () => {
                       {user && (
                         <Button
                           onClick={followUnfollowHandler}
-                          className={`h-8 text-sm ${isFollowing ? 'bg-gray-200 text-black' : 'bg-[#0095F6] text-white'}`}
+                          className={`h-8 cursor-pointer text-sm ${isFollowing ? 'bg-gray-200 text-black' : 'bg-[#0095F6] text-white'}`}
                         >
                           {isFollowing ? 'Unfollow' : 'Follow'}
                         </Button>
                       )}
                       {isFollowing && user && (
                         <Link to="/chat">
-                          <Button variant='secondary' className="ml-2 h-8 text-sm">Message</Button>
+                          <Button variant='secondary' className="ml-2 h-8 text-sm cursor-pointer">Message</Button>
                         </Link>
                       )}
                       <Button
                         variant='secondary'
-                        className="ml-2 h-8 text-sm"
+                        className="ml-2 h-8 text-sm cursor-pointer"
                         onClick={shareProfileHandler}
                       >
                         <Share2 size={14} className="mr-1" /> Share Profile

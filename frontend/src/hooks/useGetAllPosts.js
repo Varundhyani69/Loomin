@@ -14,16 +14,19 @@ const useGetAllPosts = () => {
                     { withCredentials: true }
                 );
 
-                if (res.data.success) {
+                if (res.data.success && Array.isArray(res.data.posts)) {
                     dispatch(setPosts(res.data.posts));
+                } else {
+                    dispatch(setPosts([]));
                 }
             } catch (error) {
                 console.error("Error fetching posts:", error);
+                dispatch(setPosts([]));
             }
         };
 
         fetchFollowingPosts();
-    }, []);
+    }, [dispatch]);
 };
 
 export default useGetAllPosts;

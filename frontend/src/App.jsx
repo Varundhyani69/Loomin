@@ -11,17 +11,16 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setOnlineUsers, setMessage, setHasNewMessage } from "./redux/chatSlice";
+import { setOnlineUsers, setHasNewMessage, appendMessage } from "./redux/chatSlice";
 import { addNotification, setHasNewNotification } from "./redux/notificationSlice";
 import SocketContext from "./context/SocketContext";
 import { toast } from "sonner";
 
 function App() {
-  const { user } = useSelector((store) => store.auth);
+  const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
 
-  // Setup socket connection when user logs in
   useEffect(() => {
     if (!user) return;
 
@@ -49,10 +48,17 @@ function App() {
     });
 
     socketio.on("newMessage", (msg) => {
-      dispatch(setHasNewMessage(true));
+      console.log("📩 Received new message:", msg);
+
+      if (
+        !selectedUser ||
+        (msg.senderId !== selectedUser._id && msg.receiverId !== selectedUser._id)
+      ) {
+        dispatch(setHasNewMessage(true));
+      }
+
       dispatch(appendMessage(msg));
     });
-
 
     socketio.on("notification", (notification) => {
       dispatch(setHasNewNotification(true));
@@ -68,7 +74,7 @@ function App() {
       socketio.disconnect();
       setSocket(null);
     };
-  }, [user, dispatch]);
+  }, [user, dispatch, selectedUser]);
 
   const browserRouter = createBrowserRouter([
     {

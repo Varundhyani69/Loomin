@@ -8,7 +8,7 @@ import { MessageCircleCode } from 'lucide-react';
 import Messages from './Messages';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { appendMessage } from '@/redux/chatSlice';
+import { appendMessage, setHasNewMessage } from '@/redux/chatSlice';
 import SocketContext from '@/context/SocketContext';
 
 const ChatPage = () => {
@@ -16,8 +16,9 @@ const ChatPage = () => {
     const { onlineUsers } = useSelector(store => store.chat);
     const dispatch = useDispatch();
     const [textMessage, setTextMessage] = useState("");
-    const socket = useContext(SocketContext);
     const [followings, setFollowings] = useState([]);
+    const socket = useContext(SocketContext);
+    const [newMessageFrom, setNewMessageFrom] = useState([]);
 
     useEffect(() => {
         const fetchFollowings = async () => {
@@ -25,8 +26,7 @@ const ChatPage = () => {
                 const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
                     withCredentials: true,
                 });
-
-                const users = res.data.users || res.data.followings || []; // ✅ fallback
+                const users = res.data.users || res.data.followings || [];
                 setFollowings(Array.isArray(users) ? users : []);
             } catch (err) {
                 toast.error("Failed to fetch followings");
@@ -36,7 +36,30 @@ const ChatPage = () => {
         fetchFollowings();
     }, []);
 
-    useEffect(() => () => dispatch(setSelectedUser(null)), [dispatch]);
+    useEffect(() => {
+        return () => dispatch(setSelectedUser(null));
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleIncomingMessage = (newMessage) => {
+            dispatch(setHasNewMessage(true));
+            dispatch(appendMessage(newMessage));
+
+            if (
+                newMessage?.senderId &&
+                (!selectedUser || newMessage.senderId !== selectedUser._id)
+            ) {
+                setNewMessageFrom(prev =>
+                    prev.includes(newMessage.senderId) ? prev : [...prev, newMessage.senderId]
+                );
+            }
+        };
+
+        socket.on("newMessage", handleIncomingMessage);
+        return () => socket.off("newMessage", handleIncomingMessage);
+    }, [socket, dispatch, selectedUser]);
 
     const sendMessageHandler = async (receiverId) => {
         try {
@@ -55,8 +78,13 @@ const ChatPage = () => {
         }
     };
 
+    const selectUserHandler = (userObj) => {
+        dispatch(setSelectedUser(userObj));
+        setNewMessageFrom(prev => prev.filter(id => id !== userObj._id));
+    };
+
     return (
-        <div className='flex h-screen  '>
+        <div className='flex h-screen'>
             {/* Sidebar */}
             <section className="w-full md:w-1/4 h-screen overflow-y-auto bg-[#1e1e1e] text-white border-r border-gray-700 px-3 py-6">
                 <h1 className='font-bold mb-3 p-3 text-xl'>{user?.username}</h1>
@@ -65,11 +93,13 @@ const ChatPage = () => {
                     {Array.isArray(followings) && followings.length > 0 ? (
                         followings.map(followedUser => {
                             const isOnline = onlineUsers.includes(followedUser?._id);
+                            const hasUnread = newMessageFrom.includes(followedUser._id);
+
                             return (
                                 <div
                                     key={followedUser._id}
-                                    onClick={() => dispatch(setSelectedUser(followedUser))}
-                                    className='flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer'
+                                    onClick={() => selectUserHandler(followedUser)}
+                                    className='flex gap-3 items-center p-3 hover:bg-[#414141] cursor-pointer relative'
                                 >
                                     <Avatar>
                                         <AvatarImage className='h-12 w-12 rounded-full' src={followedUser?.profilePicture} />
@@ -77,9 +107,12 @@ const ChatPage = () => {
                                     </Avatar>
                                     <div className='flex flex-col items-start'>
                                         <span className='font-medium'>{followedUser?.username}</span>
-                                        <span className={`text-xs font-bold ${isOnline ? 'text-green-600' : 'text-red-600'}`}>
-                                            {isOnline ? 'Online' : 'Offline'}
-                                        </span>
+                                        <div className='text-xs font-bold flex gap-2'>
+                                            <span className={isOnline ? 'text-green-600' : 'text-red-600'}>
+                                                {isOnline ? 'Online' : 'Offline'}
+                                            </span>
+                                            {hasUnread && <span className='text-red-500'>New Message</span>}
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -103,7 +136,7 @@ const ChatPage = () => {
                         </div>
                     </div>
                     <Messages selectedUser={selectedUser} />
-                    <div className='flex items-center p-4 border-t-gray-300'>
+                    <div className='flex items-center p-4 border-t border-gray-300'>
                         <Input
                             value={textMessage}
                             onChange={(e) => setTextMessage(e.target.value)}
@@ -111,7 +144,7 @@ const ChatPage = () => {
                             className="flex-1 mr-2 focus-visible:ring-transparent"
                             placeholder="Messages"
                         />
-                        <Button onClick={() => sendMessageHandler(selectedUser?._id)}>Send</Button>
+                        <Button className='cursor-pointer' onClick={() => sendMessageHandler(selectedUser?._id)}>Send</Button>
                     </div>
                 </section>
             ) : (

@@ -1,4 +1,4 @@
-// ✅ CommentDialog.jsx (Modern UI)
+// ✅ CommentDialog.jsx (Modern UI with logs)
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Dialog, DialogContent, DialogOverlay } from "@radix-ui/react-dialog";
 import { MoreHorizontal, Trash2, Pencil } from "lucide-react";
@@ -28,26 +28,46 @@ const CommentDialog = ({ open, setOpen }) => {
   const sentMessageHandler = async () => {
     if (!text.trim()) return;
     try {
-      const res = await axios.post(`http://localhost:8080/api/v1/post/${selectedPost._id}/comment`, { text }, { withCredentials: true });
+      console.log("💬 [Add Comment] Sending:", text);
+      const res = await axios.post(
+        `http://localhost:8080/api/v1/post/${selectedPost._id}/comment`,
+        { text },
+        { withCredentials: true }
+      );
+
       if (res.data.success) {
-        const newComment = res.data.comment;
+        console.log("✅ [Add Comment] Added:", res.data.comment);
+
+        const getUpdatedPost = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, {
+          withCredentials: true,
+        });
+        const updatedPost = getUpdatedPost.data.post;
+
         const updatedPosts = posts.map((p) =>
-          p._id === selectedPost._id ? { ...p, comments: [...p.comments, newComment] } : p
+          p._id === selectedPost._id ? updatedPost : p
         );
         dispatch(setPosts(updatedPosts));
-        dispatch(setSelectedPost(updatedPosts.find((p) => p._id === selectedPost._id)));
+        dispatch(setSelectedPost(updatedPost));
         setText("");
         toast.success("Comment added");
       }
-    } catch {
+    } catch (err) {
+      console.error("❌ [Add Comment] Failed:", err);
       toast.error("Failed to post comment");
     }
   };
 
   const deletePostHandler = async () => {
     try {
-      const res = await axios.delete(`http://localhost:8080/api/v1/post/delete/${selectedPost._id}`, { withCredentials: true });
+      console.log("🗑️ [Delete Post] ID:", selectedPost._id);
+      const res = await axios.delete(
+        `http://localhost:8080/api/v1/post/delete/${selectedPost._id}`,
+        { withCredentials: true }
+      );
+
       if (res.data.success) {
+        console.log("✅ [Delete Post] Success");
+
         dispatch(setPosts(posts.filter((p) => p._id !== selectedPost._id)));
         dispatch((dispatch, getState) => {
           const { auth } = getState();
@@ -57,17 +77,29 @@ const CommentDialog = ({ open, setOpen }) => {
         toast.success("Post deleted");
         setOpen(false);
       }
-    } catch {
+    } catch (err) {
+      console.error("❌ [Delete Post] Failed:", err);
       toast.error("Delete failed");
     }
   };
 
   const updateCaptionHandler = async () => {
     try {
-      const res = await axios.put(`http://localhost:8080/api/v1/post/${selectedPost._id}/edit-caption`, { caption: editedCaption }, { withCredentials: true });
+      console.log("✏️ [Edit Caption] New:", editedCaption);
+      const res = await axios.put(
+        `http://localhost:8080/api/v1/post/${selectedPost._id}/edit-caption`,
+        { caption: editedCaption },
+        { withCredentials: true }
+      );
+
       if (res.data.success) {
-        const getRes = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, { withCredentials: true });
+        const getRes = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, {
+          withCredentials: true,
+        });
         const updatedPost = getRes.data.post;
+
+        console.log("✅ [Edit Caption] Updated post:", updatedPost);
+
         const updatedPosts = posts.map((p) => (p._id === updatedPost._id ? updatedPost : p));
         dispatch(setPosts(updatedPosts));
         dispatch(setSelectedPost(updatedPost));
@@ -78,10 +110,12 @@ const CommentDialog = ({ open, setOpen }) => {
           );
           dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
         });
+
         toast.success("Caption updated");
         setIsEditing(false);
       }
-    } catch {
+    } catch (err) {
+      console.error("❌ [Edit Caption] Failed:", err);
       toast.error("Update failed");
     }
   };
@@ -109,14 +143,26 @@ const CommentDialog = ({ open, setOpen }) => {
                 </Avatar>
                 <span className="font-medium text-sm">{selectedPost?.author?.username}</span>
               </div>
+
               {isPostAuthor() && (
                 <div className="relative group">
                   <MoreHorizontal className="cursor-pointer" />
                   <div className="absolute right-0 top-6 bg-[#2a2a2a] text-white border border-gray-700 rounded-md p-2 hidden group-hover:block z-50 text-sm">
-                    <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#333]" onClick={() => { setIsEditing(true); setEditedCaption(selectedPost.caption || ""); }}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-white hover:bg-[#333]"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditedCaption(selectedPost.caption || "");
+                      }}
+                    >
                       <Pencil size={16} className="mr-2" /> Edit Caption
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-[#331]" onClick={deletePostHandler}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-red-500 hover:bg-[#331]"
+                      onClick={deletePostHandler}
+                    >
                       <Trash2 size={16} className="mr-2" /> Delete Post
                     </Button>
                   </div>
@@ -134,7 +180,9 @@ const CommentDialog = ({ open, setOpen }) => {
                     onChange={(e) => setEditedCaption(e.target.value)}
                     className="w-full px-2 py-1 rounded bg-[#2a2a2a] border border-gray-600 text-white"
                   />
-                  <Button onClick={updateCaptionHandler} size="sm">Save</Button>
+                  <Button onClick={updateCaptionHandler} size="sm">
+                    Save
+                  </Button>
                 </div>
               ) : (
                 <p className="text-sm text-gray-300">{selectedPost?.caption}</p>
@@ -158,7 +206,9 @@ const CommentDialog = ({ open, setOpen }) => {
                   placeholder="Add a comment..."
                   className="w-full px-3 py-2 bg-[#2a2a2a] text-white rounded border border-gray-600 focus:outline-none"
                 />
-                <Button onClick={sentMessageHandler} disabled={!text.trim()} variant="secondary">Send</Button>
+                <Button onClick={sentMessageHandler} disabled={!text.trim()} variant="secondary">
+                  Send
+                </Button>
               </div>
             </div>
           </div>

@@ -18,6 +18,7 @@ const Messages = ({ selectedUser }) => {
     const messagesEndRef = useRef(null);
     const [selectedPostData, setSelectedPostData] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const selectedUserIdRef = useRef(selectedUser?._id);
 
     useGetAllMessage(selectedUser?._id);
 
@@ -27,33 +28,38 @@ const Messages = ({ selectedUser }) => {
 
     useEffect(() => {
         if (selectedUser?._id) {
+            selectedUserIdRef.current = selectedUser._id;
             dispatch(setHasNewMessage(false));
         }
     }, [selectedUser?._id, dispatch]);
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || !selectedUser?._id) return;
 
         const handleNewMessage = async (newMsg) => {
-            if (
+            const isChatOpen =
                 newMsg?.senderId === selectedUser._id ||
-                newMsg?.receiverId === selectedUser._id
-            ) {
-                // If it includes a postId, populate it
-                if (newMsg.postId && typeof newMsg.postId === 'string') {
-                    try {
-                        const res = await axios.get(`http://localhost:8080/api/v1/post/${newMsg.postId}`, {
-                            withCredentials: true,
-                        });
-                        if (res.data.success) {
-                            newMsg.postId = res.data.post;
-                        }
-                    } catch (err) {
-                        console.error("Failed to fetch shared post in socket handler", err);
-                    }
-                }
+                newMsg?.receiverId === selectedUser._id;
 
+            if (newMsg?.postId && typeof newMsg.postId === 'string') {
+                try {
+                    const res = await axios.get(`http://localhost:8080/api/v1/post/${newMsg.postId}`, {
+                        withCredentials: true,
+                    });
+                    if (res.data.success) {
+                        newMsg.postId = res.data.post;
+                    }
+                } catch (err) {
+                    console.error("📩 Error fetching shared post:", err);
+                }
+            }
+
+            if (isChatOpen) {
+                console.log("📩 Appending live message:", newMsg);
                 dispatch(appendMessage(newMsg));
+            } else {
+                console.log("📩 Message received but not in current chat");
+                dispatch(setHasNewMessage(true));
             }
         };
 
@@ -70,16 +76,21 @@ const Messages = ({ selectedUser }) => {
     const safeMessages = Array.isArray(messages) ? messages : [];
 
     return (
-        <div className='overflow-y-auto  flex-1 p-4'>
+        <div className="overflow-y-auto flex-1 p-4">
             <div className="flex justify-center mb-4">
-                <div className='flex flex-col items-center justify-center'>
+                <div className="flex flex-col items-center justify-center">
                     <Avatar>
-                        <AvatarImage className='h-24 w-24 object-cover rounded-full' src={selectedUser?.profilePicture} />
-                        <AvatarFallback>CN</AvatarFallback>
+                        <AvatarImage
+                            className="h-24 w-24 object-cover rounded-full"
+                            src={selectedUser?.profilePicture}
+                        />
+                        <AvatarFallback>{selectedUser?.username?.[0]}</AvatarFallback>
                     </Avatar>
                     <span>{selectedUser?.username}</span>
                     <Link to={`/profile/${selectedUser?._id}`}>
-                        <Button className="h-8 my-2" variant="secondary">View Profile</Button>
+                        <Button className="h-8 my-2" variant="secondary">
+                            View Profile
+                        </Button>
                     </Link>
                 </div>
             </div>
@@ -87,33 +98,45 @@ const Messages = ({ selectedUser }) => {
             {safeMessages.length === 0 ? (
                 <div className="text-center text-gray-500">No messages to display</div>
             ) : (
-                <div className='flex flex-col gap-2'>
+                <div className="flex flex-col gap-2">
                     {safeMessages.map((msg, i) => {
                         if (!msg || typeof msg !== 'object') return null;
-
                         const isMe = msg.senderId === currentUserId;
-                        const sharedPost = msg?.postId;
+                        const post = msg.postId;
 
                         return (
-                            <div key={msg._id || i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            <div
+                                key={`${msg._id}-${i}`}
+                                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                            >
                                 <div className={`max-w-xs px-4 py-2 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.3)] ${isMe ? 'bg-[#2a2a2a]' : 'bg-[#3a3a3a]'}`}>
                                     {msg.message && <div>{msg.message}</div>}
-                                    {msg.postId?.image && (
-                                        <div className="mt-2 w-60 h-60 cursor-pointer" onClick={() => handlePostClick(msg.postId)}>
-                                            <img src={msg.postId.image} alt="Shared Post" className="w-full h-full object-cover rounded-md" />
-                                            <p className="text-xs italic text-white/80 mt-1">{msg.postId.caption}</p>
+                                    {post?.image && (
+                                        <div
+                                            className="mt-2 w-60 h-60 cursor-pointer"
+                                            onClick={() => handlePostClick(post)}
+                                        >
+                                            <img
+                                                src={post.image}
+                                                alt="Shared Post"
+                                                className="w-full h-full object-cover rounded-md"
+                                            />
+                                            <p className="text-xs italic text-white/80 mt-1">{post.caption}</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-
                         );
                     })}
                     <div ref={messagesEndRef} />
                 </div>
             )}
 
-            <CommentDialog open={dialogOpen} setOpen={setDialogOpen} post={selectedPostData} />
+            <CommentDialog
+                open={dialogOpen}
+                setOpen={setDialogOpen}
+                post={selectedPostData}
+            />
         </div>
     );
 };

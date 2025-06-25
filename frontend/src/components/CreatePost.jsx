@@ -125,11 +125,11 @@ const CreatePost = ({ open, setOpen }) => {
         {imagePrev && (
           loading ? (
             <Button disabled className="w-full bg-[#333]">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="cursor-pointer mr-2 h-4 w-4 animate-spin" />
               Uploading...
             </Button>
           ) : (
-            <Button onClick={createPostHandler} className="w-full bg-[#0095F6] hover:bg-[#007be6]">
+            <Button onClick={createPostHandler} className=" cursor-pointer w-full bg-[#0095F6] hover:bg-[#007be6]">
               Post
             </Button>
           )

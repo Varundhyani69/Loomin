@@ -1,5 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@radix-ui/react-dialog';
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogOverlay,
+} from '@radix-ui/react-dialog';
 import { Bookmark, MessageCircle, MoreHorizontal, Send } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
@@ -9,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { setPosts, setSelectedPost } from '@/redux/postSlice';
+import { setAuthUser } from '@/redux/authSlice';
 import { Link } from 'react-router-dom';
 
 const Post = ({ post }) => {
@@ -18,120 +24,143 @@ const Post = ({ post }) => {
 
     const [text, setText] = useState('');
     const [open, setOpen] = useState(false);
-    const [comment, setComment] = useState(post.comments);
     const [postLike, setPostLike] = useState(post.likes.length);
     const [liked, setLiked] = useState(post.likes.includes(user?._id));
-    const [isFollowing, setIsFollowing] = useState(false);
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
     const [followings, setFollowings] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredFollowings = followings.filter((f) =>
+        f.username.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     useEffect(() => {
-        setIsFollowing(post?.author?.followers?.includes(user?._id));
-        setIsBookmarked(user?.bookmarks?.includes(post._id));
-    }, [post, user]);
+        if (user && Array.isArray(user.bookmarks)) {
+            setIsBookmarked(user.bookmarks.includes(post._id));
+        } else {
+            setIsBookmarked(false);
+        }
+    }, [user, post._id]);
 
     const changeEventHandler = (e) => {
-        const inputText = e.target.value;
-        setText(inputText.trim() ? inputText : '');
-    };
-
-    const deletePostHandler = async () => {
-        try {
-            const res = await axios.delete(`http://localhost:8080/api/v1/post/delete/${post?._id}`, { withCredentials: true });
-            if (res.data.success) {
-                const updatedPostData = posts.filter((postItem) => postItem?._id !== post?._id);
-                dispatch(setPosts(updatedPostData));
-                toast.success(res.data.message);
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Delete failed");
-        }
-    };
-
-    const likeDislikeHandler = async () => {
-        try {
-            const action = liked ? 'dislike' : 'like';
-            const res = await axios.post(`http://localhost:8080/api/v1/post/${post._id}/${action}`, {}, { withCredentials: true });
-
-            if (res.data.success) {
-                const updatedLikes = liked ? postLike - 1 : postLike + 1;
-                setPostLike(updatedLikes);
-                setLiked(!liked);
-                const updatedPostData = posts.map((p) => p._id === post._id
-                    ? {
-                        ...p,
-                        likes: liked ? p.likes.filter(id => id !== user._id) : [...p.likes, user._id]
-                    }
-                    : p
-                );
-                dispatch(setPosts(updatedPostData));
-                toast.success(res.data.message);
-            }
-        } catch (error) {
-            toast.error("Like/Dislike failed");
-        }
+        setText(e.target.value);
     };
 
     const commentHandler = async () => {
+        if (!text.trim()) return;
         try {
             const res = await axios.post(
                 `http://localhost:8080/api/v1/post/${post._id}/comment`,
                 { text },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
+
             if (res.data.success) {
-                const updatedCommentData = [...comment, res.data.comment];
-                setComment(updatedCommentData);
-                const updatedPostData = posts.map(p =>
-                    p._id === post._id ? { ...p, comments: updatedCommentData } : p
+                console.log("[Comment] Added:", res.data.comment);
+                const updatedPostRes = await axios.get(
+                    `http://localhost:8080/api/v1/post/${post._id}`,
+                    { withCredentials: true }
                 );
-                dispatch(setPosts(updatedPostData));
-                toast.success(res.data.message);
-                setText("");
+                const updatedPost = updatedPostRes.data.post;
+                dispatch(setPosts(posts.map(p => p._id === post._id ? updatedPost : p)));
+                dispatch(setSelectedPost(updatedPost));
+                setText('');
+                toast.success("Comment added");
             }
-        } catch (error) {
-            toast.error(error?.response?.data?.message || "Comment failed");
-        }
-    };
-
-    const followUnfollowHandler = async () => {
-        if (!user) return toast.error("Please log in to follow/unfollow");
-
-        try {
-            const res = await axios.post(
-                `http://localhost:8080/api/v1/user/followorunfollow/${post.author._id}`,
-                {},
-                { withCredentials: true }
-            );
-            if (!res.data.success) return toast.error(res.data.message);
-            toast.success(res.data.message);
-            setIsFollowing(prev => !prev);
         } catch (err) {
-            toast.error("Follow/Unfollow failed");
+            console.error("[Comment] Failed:", err);
+            toast.error("Failed to comment");
         }
     };
 
     const toggleBookmarkHandler = async () => {
         try {
-            const res = await axios.post(`http://localhost:8080/api/v1/post/${post?._id}/bookmark`, {}, { withCredentials: true });
+            const res = await axios.post(
+                `http://localhost:8080/api/v1/post/${post._id}/bookmark`,
+                {},
+                { withCredentials: true }
+            );
+
+            if (!res.data.success) {
+                console.warn("[Bookmark] Error:", res.data);
+                return toast.error(res.data.message || "Failed to update bookmark");
+            }
+
+            const userRes = await axios.get("http://localhost:8080/api/v1/user/profile", {
+                withCredentials: true
+            });
+
+            if (userRes.data.success) {
+                const updatedUser = userRes.data.user;
+                dispatch(setAuthUser(updatedUser));
+                setIsBookmarked(Array.isArray(updatedUser.bookmarks) && updatedUser.bookmarks.includes(post._id));
+                console.log("[Bookmark] Updated user bookmarks");
+            }
+
+            toast.success(res.data.message);
+        } catch (err) {
+            console.error("[Bookmark] Failed:", err);
+            toast.error("Bookmark failed");
+        }
+    };
+
+    const likeDislikeHandler = async () => {
+        try {
+            const action = liked ? 'dislike' : 'like';
+            console.log(`${liked ? '💔 Unliking' : '❤️ Liking'} post:`, post._id);
+
+            const res = await axios.post(
+                `http://localhost:8080/api/v1/post/${post._id}/${action}`,
+                {},
+                { withCredentials: true }
+            );
 
             if (res.data.success) {
-                setIsBookmarked(prev => !prev);
-                toast.success(res.data.message);
-                window.dispatchEvent(new Event("refreshProfile"));
+                console.log("✅ Like/Dislike updated:", res.data.message);
+                const updatedPostRes = await axios.get(
+                    `http://localhost:8080/api/v1/post/${post._id}`,
+                    { withCredentials: true }
+                );
+                const updatedPost = updatedPostRes.data.post;
+                dispatch(setPosts(posts.map(p => p._id === post._id ? updatedPost : p)));
+                dispatch(setSelectedPost(updatedPost));
+                setPostLike(updatedPost.likes.length);
+                setLiked(!liked);
+            } else {
+                toast.error(res.data.message);
             }
-        } catch (err) {
-            toast.error("Bookmark failed");
+        } catch (error) {
+            console.error("❌ Like/Dislike failed:", error);
+            toast.error("Failed to update like/dislike");
         }
     };
 
     const fetchFollowings = async () => {
         try {
-            const res = await axios.get("http://localhost:8080/api/v1/user/followings", { withCredentials: true });
+            const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
+                withCredentials: true,
+            });
             setFollowings(res.data.followings || []);
+            console.log("[Share] Loaded followings:", res.data.followings);
         } catch (error) {
             toast.error("Failed to load followings");
+            console.error("[Share] Error loading followings:", error);
+        }
+    };
+
+    const handleSharePost = async (receiverId) => {
+        try {
+            await axios.post(`http://localhost:8080/api/v1/message/send/${receiverId}`, {
+                message: `Check out this post!`,
+                postId: post._id,
+            }, { withCredentials: true });
+
+            toast.success("Post shared!");
+            setShareOpen(false);
+        } catch (err) {
+            console.error("[Share] Failed to send post:", err);
+            toast.error("Failed to share");
         }
     };
 
@@ -139,55 +168,24 @@ const Post = ({ post }) => {
         if (shareOpen) fetchFollowings();
     }, [shareOpen]);
 
-    const handleSharePost = async (receiverId) => {
-        try {
-            await axios.post(`http://localhost:8080/api/v1/message/send/${receiverId}`, {
-                message: `Check out this post!`,
-                postId: post._id
-            }, { withCredentials: true });
-
-            toast.success("Post shared!");
-            setShareOpen(false);
-        } catch (err) {
-            toast.error("Failed to share");
-        }
-    };
-
     return (
         <div className='my-8 w-full max-w-md mx-auto rounded-2xl bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-4'>
+            {/* top bar */}
             <div className='flex items-center justify-between'>
                 <div className="flex items-center gap-2">
                     <Avatar>
                         <Link to={`/profile/${post.author._id}`}>
                             <AvatarImage className='h-10 w-10 rounded-full' src={post.author.profilePicture} alt='Post_Image' />
-                            <AvatarFallback>CN</AvatarFallback>
+                            <AvatarFallback>{post.author.username[0]}</AvatarFallback>
                         </Link>
                     </Avatar>
                     <Link to={`/profile/${post.author._id}`}>
                         <h1>{post.author.username}</h1>
                     </Link>
                 </div>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <MoreHorizontal className='cursor-pointer' />
-                    </DialogTrigger>
-                    <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-                    <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-96 rounded-md bg-white p-6 shadow-xl focus:outline-none z-50">
-                        <div className="flex flex-col items-center gap-2 text-sm text-center">
-                            <Button onClick={followUnfollowHandler} className={`h-8 text-sm ${!isFollowing ? 'bg-gray-200 text-black' : 'bg-[#0095F6] text-white'}`}>
-                                {isFollowing ? 'Unfollow' : 'Follow'}
-                            </Button>
-                            <Button variant="ghost" onClick={toggleBookmarkHandler}>
-                                {isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
-                            </Button>
-                            {user?._id === post?.author._id && (
-                                <Button variant="ghost" onClick={deletePostHandler}>Delete</Button>
-                            )}
-                        </div>
-                    </DialogContent>
-                </Dialog>
             </div>
 
+            {/* post image */}
             <img
                 onClick={() => {
                     dispatch(setSelectedPost(post));
@@ -198,53 +196,52 @@ const Post = ({ post }) => {
                 alt="post_image"
             />
 
+            {/* post actions */}
             <div className="flex items-center justify-between">
                 <div className='flex items-center gap-3'>
                     {liked ? (
                         <FaHeart onClick={likeDislikeHandler} size={24} className='cursor-pointer text-red-600' />
                     ) : (
-                        <FaRegHeart className='cursor-pointer' onClick={likeDislikeHandler} size={22} />
+                        <FaRegHeart onClick={likeDislikeHandler} size={22} className='cursor-pointer text-white' />
                     )}
-                    <MessageCircle onClick={() => {
-                        dispatch(setSelectedPost(post));
-                        setOpen(true);
-                    }} className='cursor-pointer hover:text-gray-600' />
-
-                    {/* Share Dialog */}
+                    <MessageCircle
+                        onClick={() => {
+                            dispatch(setSelectedPost(post));
+                            setOpen(true);
+                        }}
+                        className='cursor-pointer hover:text-gray-400'
+                    />
+                    {/* Share Post */}
                     <Dialog open={shareOpen} onOpenChange={setShareOpen}>
                         <DialogTrigger asChild>
-                            <Send className="cursor-pointer hover:text-gray-400 transition" />
+                            <Send className='cursor-pointer hover:text-gray-400' />
                         </DialogTrigger>
-
                         <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+                        <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-lg bg-[#1e1e1e] p-6 shadow-xl focus:outline-none z-50">
+                            <h2 className="text-xl font-semibold text-white mb-4">Share Post</h2>
 
-                        <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-xl bg-[#1e1e1e] text-white p-6 shadow-2xl z-50">
-                            <h2 className="text-lg font-bold mb-4">Share Post</h2>
+                            <input
+                                type="text"
+                                placeholder="Search by username..."
+                                className="w-full p-2 mb-4 rounded-md border border-gray-600 bg-transparent text-white placeholder-gray-400"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
 
-                            {followings.length === 0 ? (
-                                <p className="text-sm text-gray-400">You're not following anyone.</p>
+                            {filteredFollowings.length === 0 ? (
+                                <p className="text-gray-400">No users found</p>
                             ) : (
-                                <div className="flex flex-col gap-3 max-h-64 overflow-y-auto custom-scroll">
-                                    {followings.map((f) => (
-                                        <div
-                                            key={f._id}
-                                            className="flex items-center justify-between bg-[#2a2a2a] hover:bg-[#2f2f2f] rounded-lg px-3 py-2 transition"
-                                        >
+                                <div className="max-h-64 overflow-y-auto space-y-3">
+                                    {filteredFollowings.map((user) => (
+                                        <div key={user._id} className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
-                                                    <AvatarImage
-                                                        className="h-10 w-10 rounded-full object-cover"
-                                                        src={f.profilePicture}
-                                                    />
-                                                    <AvatarFallback>{f.username[0]?.toUpperCase()}</AvatarFallback>
+                                                    <AvatarImage className='h-12 w-12' src={user.profilePicture} />
+                                                    <AvatarFallback>{user.username[0]}</AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-sm font-medium">{f.username}</span>
+                                                <span className="text-white">{user.username}</span>
                                             </div>
-                                            <Button
-                                                onClick={() => handleSharePost(f._id)}
-                                                size="sm"
-                                                className="bg-[#0095F6] hover:bg-[#007adf] text-white px-4 py-1 text-xs"
-                                            >
+                                            <Button className='cursor-pointer' size="sm" onClick={() => handleSharePost(user._id)}>
                                                 Send
                                             </Button>
                                         </div>
@@ -254,27 +251,25 @@ const Post = ({ post }) => {
                         </DialogContent>
                     </Dialog>
                 </div>
-
                 <Bookmark
                     onClick={toggleBookmarkHandler}
-                    className={`cursor-pointer hover:text-gray-600 ${isBookmarked ? 'fill-white' : ''}`}
+                    className={`cursor-pointer hover:text-gray-600 ${isBookmarked ? 'fill-white text-white' : 'text-gray-400'}`}
                 />
             </div>
 
-            <span className='font-medium block mb-2'>{postLike} likes</span>
-
-            <p>
+            <span className='font-medium block mb-2 text-white'>{postLike} likes</span>
+            <p className='text-white'>
                 <Link to={`/profile/${post.author._id}`}>
                     <span className='font-medium mr-2'>{post.author.username}</span>
                 </Link>
                 {post.caption}
             </p>
 
-            {comment.length > 0 ? (
+            {post.comments.length > 0 ? (
                 <span className='cursor-pointer text-sm text-gray-400' onClick={() => {
                     dispatch(setSelectedPost(post));
                     setOpen(true);
-                }}>View all {comment.length} comments</span>
+                }}>View all {post.comments.length} comments</span>
             ) : (
                 <span className='cursor-pointer text-sm text-gray-400' onClick={() => {
                     dispatch(setSelectedPost(post));
@@ -282,18 +277,18 @@ const Post = ({ post }) => {
                 }}>Be first to comment</span>
             )}
 
-            <CommentDialog open={open} setOpen={setOpen} comment={comment} />
+            <CommentDialog open={open} setOpen={setOpen} />
 
-            <div className='flex items-center justify-between'>
+            {/* Add Comment */}
+            <div className='flex items-center justify-between mt-2'>
                 <input
                     type="text"
                     value={text}
                     onChange={changeEventHandler}
                     placeholder='Add a comment'
-                    className='outline-none text-sm w-full'
+                    className='outline-none text-sm w-full bg-transparent text-white border-b border-gray-600 py-1'
                 />
             </div>
-
             {text && <span onClick={commentHandler} className='text-[#3BADF8] cursor-pointer'>Post</span>}
         </div>
     );
