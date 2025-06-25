@@ -56,9 +56,9 @@ const ChatPage = () => {
     };
 
     return (
-        <div className='flex ml-[16%] h-screen'>
+        <div className='flex h-screen  '>
             {/* Sidebar */}
-            <section className='w-full md:w-1/4 my-8'>
+            <section className="w-full md:w-1/4 h-screen overflow-y-auto bg-[#1e1e1e] text-white border-r border-gray-700 px-3 py-6">
                 <h1 className='font-bold mb-3 p-3 text-xl'>{user?.username}</h1>
                 <hr className='mb-4 border-gray-300' />
                 <div className='overflow-y-auto h-[80vh]'>
@@ -92,7 +92,7 @@ const ChatPage = () => {
 
             {/* Chat Area */}
             {selectedUser ? (
-                <section className='flex-1 border border-l-gray-300 flex flex-col h-full'>
+                <section className="flex-1 flex flex-col h-screen bg-[#121212] text-white">
                     <div className='flex gap-3 items-center px-3 py-2 border-b border-gray-300 sticky top-0 z-10'>
                         <Avatar>
                             <AvatarImage className='h-12 w-12 rounded-full' src={selectedUser?.profilePicture} alt='profile' />

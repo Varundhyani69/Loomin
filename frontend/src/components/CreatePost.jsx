@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
-import { setUserProfile } from '@/redux/authSlice'; // Correct import
+import { setUserProfile } from '@/redux/authSlice';
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
@@ -49,9 +49,7 @@ const CreatePost = ({ open, setOpen }) => {
     try {
       setLoading(true);
       const res = await axios.post('http://localhost:8080/api/v1/post/addpost', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
 
@@ -62,7 +60,7 @@ const CreatePost = ({ open, setOpen }) => {
           ...userProfile,
           posts: [newPost, ...userProfile.posts],
         }));
-        window.dispatchEvent(new Event('postCreated')); // Trigger profile refresh
+        window.dispatchEvent(new Event('postCreated'));
         toast.success(res.data.message);
         setOpen(false);
         setCaption('');
@@ -79,28 +77,25 @@ const CreatePost = ({ open, setOpen }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-
-      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-6 bg-white rounded-md shadow-xl space-y-4 z-50">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-6 bg-[#1e1e1e] text-white rounded-xl shadow-2xl z-50 space-y-4">
         <DialogHeader className="text-center font-semibold">
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
 
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage className='h-12 w-12 rounded-full' src={user?.profilePicture} alt="image" />
+            <AvatarImage className="h-12 w-12 rounded-full" src={user?.profilePicture} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <div>
-            <h1 className="font-semibold text-xs">{user?.username}</h1>
-          </div>
+          <h1 className="font-semibold text-sm">{user?.username}</h1>
         </div>
 
         {imagePrev && (
-          <div className="w-full h-60 flex items-center justify-center overflow-hidden rounded">
+          <div className="w-full h-60 overflow-hidden rounded-xl flex items-center justify-center bg-black/10">
             <img
               src={imagePrev}
-              alt="prev_img"
-              className="object-cover max-h-full rounded-md"
+              alt="Preview"
+              className="object-cover w-full h-full rounded-md"
             />
           </div>
         )}
@@ -112,30 +107,33 @@ const CreatePost = ({ open, setOpen }) => {
           className="hidden"
         />
         <Textarea
-          className="focus-visible:ring-transparent border-none"
           placeholder="Write a caption..."
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
+          className="bg-[#2a2a2a] text-white border-none focus:ring-0"
         />
 
-        <Button
-          onClick={() => imageRef.current.click()}
-          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#0094f6bc]"
-        >
-          Select from computer
-        </Button>
-        {
-          imagePrev && (
-            loading ? (
-              <Button className='w-full'>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                Please Wait
-              </Button>
-            ) : (
-              <Button onClick={createPostHandler} type='submit' className='w-full'>Post</Button>
-            )
+        <div className="flex justify-between gap-2">
+          <Button
+            onClick={() => imageRef.current.click()}
+            className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:opacity-90"
+          >
+            Select from computer
+          </Button>
+        </div>
+
+        {imagePrev && (
+          loading ? (
+            <Button disabled className="w-full bg-[#333]">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Uploading...
+            </Button>
+          ) : (
+            <Button onClick={createPostHandler} className="w-full bg-[#0095F6] hover:bg-[#007be6]">
+              Post
+            </Button>
           )
-        }
+        )}
       </DialogContent>
     </Dialog>
   );

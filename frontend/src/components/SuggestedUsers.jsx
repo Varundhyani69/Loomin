@@ -4,41 +4,55 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 const SuggestedUsers = () => {
-    const { suggestedUsers = [] } = useSelector(store => store.auth); // ✅ fallback to []
+    const { suggestedUsers = [] } = useSelector((store) => store.auth);
 
     return (
-        <div className='my-10'>
-            <div className='flex items-center justify-between text-sm'>
-                <h1 className='font-semibold text-gray-600'>Suggested for you</h1>
-                <span className='font-medium cursor-pointer ml-2'>See All</span>
+        <div className="my-10">
+            <div className="flex items-center justify-between text-sm mb-3">
+                <h2 className="font-semibold text-gray-400">Suggested for you</h2>
+
             </div>
 
             {suggestedUsers.length === 0 ? (
-                <p className="text-gray-400 text-sm mt-4">No suggestions available</p>
+                <p className="text-gray-500 text-sm">No suggestions available</p>
             ) : (
-                suggestedUsers.map((user) => (
-                    <div key={user._id} className='flex items-center justify-between my-5'>
-                        <div className="flex items-center gap-2">
-                            <Link to={`/profile/${user._id}`}>
-                                <Avatar>
-                                    <AvatarImage className='h-10 w-10 rounded-full' src={user?.profilePicture} alt='Profile_Image' />
-                                    <AvatarFallback>{user?.username?.[0]?.toUpperCase() || "U"}</AvatarFallback>
-                                </Avatar>
-                            </Link>
-                            <div>
-                                <h1 className='font-semibold text-sm'>
-                                    <Link to={`/profile/${user._id}`}>{user?.username}</Link>
-                                </h1>
-                                <span className='text-gray-600 text-sm'>
-                                    {user?.bio || "Bio Here..."}
-                                </span>
+                <div className="space-y-5">
+                    {suggestedUsers.map((user) => (
+                        <div
+                            key={user._id}
+                            className="flex items-center justify-between"
+                        >
+                            {/* Profile Row */}
+                            <div className="flex items-center gap-3">
+                                <Link to={`/profile/${user._id}`}>
+                                    <Avatar>
+                                        <AvatarImage
+                                            className="h-10 w-10 rounded-full object-cover"
+                                            src={user?.profilePicture}
+                                            alt="Profile_Image"
+                                        />
+                                        <AvatarFallback>{user?.username?.[0]?.toUpperCase() || "U"}</AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                                <div>
+                                    <h1 className="text-sm font-semibold text-white leading-tight">
+                                        <Link to={`/profile/${user._id}`} className="hover:underline">
+                                            {user?.username}
+                                        </Link>
+                                    </h1>
+                                    <p className="text-xs text-gray-400">
+                                        {user?.bio || "No bio available"}
+                                    </p>
+                                </div>
                             </div>
+
+                            {/* Follow Action */}
+                            <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition duration-200">
+                                Follow
+                            </button>
                         </div>
-                        <span className='text-[#3BADF8] text-xs font-bold cursor-pointer hover:text-[#3bacf88a]'>
-                            Follow
-                        </span>
-                    </div>
-                ))
+                    ))}
+                </div>
             )}
         </div>
     );

@@ -1,18 +1,24 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
-import React from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+import React from 'react';
 
 const Comment = ({ comment }) => {
   return (
-    <div className='my-2'>
-      <div className='flex gap-3 items-center'>
+    <div className="my-2">
+      <div className="flex gap-3 items-center">
         <Avatar>
-          <AvatarImage className='h-10 w-10 rounded-full' src={comment?.author?.profilePicture} />
+          <AvatarImage
+            className="h-10 w-10 rounded-full object-cover"
+            src={comment?.author?.profilePicture}
+          />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        <h1 className='font-bold text-sm'>{comment?.author?.username} <span className='font-normal pl-1'>{comment?.text}</span></h1>
+        <p className="text-sm text-white">
+          <span className="font-semibold">{comment?.author?.username}</span>{' '}
+          <span className="text-gray-300">{comment?.text}</span>
+        </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Comment
+export default Comment;

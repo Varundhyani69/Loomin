@@ -3,13 +3,13 @@ import LeftSidebar from "./LeftSidebar"
 
 const MainLayout = () => {
   return (
-    <div>
+    <div className="flex bg-[#121212] text-white min-h-screen">
       <LeftSidebar />
-      <div>
+      <div className="flex-1 md:ml-72">
         <Outlet />
       </div>
     </div>
   )
 }
 
-export default MainLayout
+export default MainLayout;

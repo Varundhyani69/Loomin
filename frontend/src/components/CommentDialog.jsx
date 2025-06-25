@@ -1,9 +1,6 @@
+// ✅ CommentDialog.jsx (Modern UI)
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogOverlay,
-} from "@radix-ui/react-dialog";
+import { Dialog, DialogContent, DialogOverlay } from "@radix-ui/react-dialog";
 import { MoreHorizontal, Trash2, Pencil } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "./ui/button";
@@ -22,35 +19,20 @@ const CommentDialog = ({ open, setOpen }) => {
   const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
 
-  const changeEventHandler = (e) => setText(e.target.value);
-
   const isPostAuthor = () => {
     if (!selectedPost || !user) return false;
-
-    const authorId =
-      typeof selectedPost.author === "string"
-        ? selectedPost.author
-        : selectedPost.author?._id?.toString(); // ensure string comparison
-    console.log("USER:", user._id, "AUTHOR:", selectedPost.author);
-
-    return user._id?.toString() === authorId;
+    const authorId = typeof selectedPost.author === "string" ? selectedPost.author : selectedPost.author?._id;
+    return user._id?.toString() === authorId?.toString();
   };
 
   const sentMessageHandler = async () => {
     if (!text.trim()) return;
     try {
-      const res = await axios.post(
-        `http://localhost:8080/api/v1/post/${selectedPost._id}/comment`,
-        { text },
-        { headers: { "Content-Type": "application/json" }, withCredentials: true }
-      );
-
+      const res = await axios.post(`http://localhost:8080/api/v1/post/${selectedPost._id}/comment`, { text }, { withCredentials: true });
       if (res.data.success) {
         const newComment = res.data.comment;
-        const updatedPosts = posts.map((post) =>
-          post._id === selectedPost._id
-            ? { ...post, comments: [...post.comments, newComment] }
-            : post
+        const updatedPosts = posts.map((p) =>
+          p._id === selectedPost._id ? { ...p, comments: [...p.comments, newComment] } : p
         );
         dispatch(setPosts(updatedPosts));
         dispatch(setSelectedPost(updatedPosts.find((p) => p._id === selectedPost._id)));
@@ -64,28 +46,14 @@ const CommentDialog = ({ open, setOpen }) => {
 
   const deletePostHandler = async () => {
     try {
-      const res = await axios.delete(
-        `http://localhost:8080/api/v1/post/delete/${selectedPost._id}`,
-        { withCredentials: true }
-      );
-
+      const res = await axios.delete(`http://localhost:8080/api/v1/post/delete/${selectedPost._id}`, { withCredentials: true });
       if (res.data.success) {
-        const updatedPosts = posts.filter((p) => p._id !== selectedPost._id);
-        dispatch(setPosts(updatedPosts));
-
+        dispatch(setPosts(posts.filter((p) => p._id !== selectedPost._id)));
         dispatch((dispatch, getState) => {
           const { auth } = getState();
-          const updatedUserProfilePosts = auth.userProfile?.posts?.filter(
-            (p) => p._id !== selectedPost._id
-          );
-          if (updatedUserProfilePosts) {
-            dispatch(setUserProfile({
-              ...auth.userProfile,
-              posts: updatedUserProfilePosts,
-            }));
-          }
+          const updatedUserProfilePosts = auth.userProfile?.posts?.filter((p) => p._id !== selectedPost._id);
+          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
         });
-
         toast.success("Post deleted");
         setOpen(false);
       }
@@ -96,38 +64,20 @@ const CommentDialog = ({ open, setOpen }) => {
 
   const updateCaptionHandler = async () => {
     try {
-      const res = await axios.put(
-        `http://localhost:8080/api/v1/post/${selectedPost._id}/edit-caption`,
-        { caption: editedCaption },
-        { withCredentials: true }
-      );
-
+      const res = await axios.put(`http://localhost:8080/api/v1/post/${selectedPost._id}/edit-caption`, { caption: editedCaption }, { withCredentials: true });
       if (res.data.success) {
-        const getRes = await axios.get(
-          `http://localhost:8080/api/v1/post/${selectedPost._id}`,
-          { withCredentials: true }
-        );
-
+        const getRes = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, { withCredentials: true });
         const updatedPost = getRes.data.post;
-        const updatedPosts = posts.map((p) =>
-          p._id === updatedPost._id ? updatedPost : p
-        );
+        const updatedPosts = posts.map((p) => (p._id === updatedPost._id ? updatedPost : p));
         dispatch(setPosts(updatedPosts));
         dispatch(setSelectedPost(updatedPost));
-
         dispatch((dispatch, getState) => {
           const { auth } = getState();
           const updatedUserProfilePosts = auth.userProfile?.posts?.map((p) =>
             p._id === updatedPost._id ? updatedPost : p
           );
-          if (updatedUserProfilePosts) {
-            dispatch(setUserProfile({
-              ...auth.userProfile,
-              posts: updatedUserProfilePosts
-            }));
-          }
+          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
         });
-
         toast.success("Caption updated");
         setIsEditing(false);
       }
@@ -139,48 +89,34 @@ const CommentDialog = ({ open, setOpen }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl p-0 flex flex-col bg-white rounded-md shadow-xl z-50">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl p-0 flex flex-col bg-[#1e1e1e] text-white rounded-xl shadow-2xl z-50">
         <div className="flex h-[80vh]">
-          {/* Left - Image */}
           <div className="w-1/2">
             <img
-              className="w-full h-full object-cover rounded-l-md"
+              className="w-full h-full object-cover rounded-l-xl"
               src={selectedPost?.image || ""}
               alt="post_img"
             />
           </div>
 
-          {/* Right - Content */}
-          <div className="w-1/2 flex flex-col justify-between">
+          <div className="w-1/2 flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <div className="flex gap-3 items-center">
                 <Avatar>
-                  <AvatarImage className='h-10 w-10 rounded-full' src={selectedPost?.author?.profilePicture || ""} />
-                  <AvatarFallback>{selectedPost?.author?.username?.[0] || "U"}</AvatarFallback>
+                  <AvatarImage className="h-10 w-10 rounded-full" src={selectedPost?.author?.profilePicture} />
+                  <AvatarFallback>{selectedPost?.author?.username?.[0]}</AvatarFallback>
                 </Avatar>
-                <span className="font-semibold text-xs">{selectedPost?.author?.username}</span>
+                <span className="font-medium text-sm">{selectedPost?.author?.username}</span>
               </div>
-
               {isPostAuthor() && (
                 <div className="relative group">
                   <MoreHorizontal className="cursor-pointer" />
-                  <div className="absolute right-0 top-6 bg-white shadow-md border rounded-md p-2 hidden group-hover:block z-50 text-sm">
-                    <Button
-                      variant="ghost"
-                      className="text-black hover:bg-gray-100 w-full justify-start"
-                      onClick={() => {
-                        setIsEditing(true);
-                        setEditedCaption(selectedPost.caption || "");
-                      }}
-                    >
+                  <div className="absolute right-0 top-6 bg-[#2a2a2a] text-white border border-gray-700 rounded-md p-2 hidden group-hover:block z-50 text-sm">
+                    <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#333]" onClick={() => { setIsEditing(true); setEditedCaption(selectedPost.caption || ""); }}>
                       <Pencil size={16} className="mr-2" /> Edit Caption
                     </Button>
-                    <Button
-                      variant="ghost"
-                      className="text-red-600 hover:bg-red-50 w-full justify-start"
-                      onClick={deletePostHandler}
-                    >
+                    <Button variant="ghost" className="w-full justify-start text-red-500 hover:bg-[#331]" onClick={deletePostHandler}>
                       <Trash2 size={16} className="mr-2" /> Delete Post
                     </Button>
                   </div>
@@ -189,48 +125,40 @@ const CommentDialog = ({ open, setOpen }) => {
             </div>
 
             {/* Caption */}
-            <div className="px-4 text-sm">
+            <div className="px-4 py-2 border-b border-gray-700">
               {isEditing ? (
-                <div className="flex gap-1">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={editedCaption}
                     onChange={(e) => setEditedCaption(e.target.value)}
-                    className="border p-1 rounded w-full"
+                    className="w-full px-2 py-1 rounded bg-[#2a2a2a] border border-gray-600 text-white"
                   />
-                  <Button onClick={updateCaptionHandler}>Save</Button>
+                  <Button onClick={updateCaptionHandler} size="sm">Save</Button>
                 </div>
               ) : (
-                <p>{selectedPost?.caption}</p>
+                <p className="text-sm text-gray-300">{selectedPost?.caption}</p>
               )}
             </div>
 
-            <hr />
-
             {/* Comments */}
-            <div className="flex-1 overflow-y-auto max-h-96 p-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {selectedPost?.comments?.map((comment) => (
                 <Comment key={comment._id} comment={comment} />
               ))}
             </div>
 
             {/* Add Comment */}
-            <div className="p-4">
+            <div className="p-4 border-t border-gray-700">
               <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   value={text}
-                  onChange={changeEventHandler}
+                  onChange={(e) => setText(e.target.value)}
                   placeholder="Add a comment..."
-                  className="w-full outline-none border border-gray-300 p-2 rounded"
+                  className="w-full px-3 py-2 bg-[#2a2a2a] text-white rounded border border-gray-600 focus:outline-none"
                 />
-                <Button
-                  disabled={!text.trim()}
-                  onClick={sentMessageHandler}
-                  variant="outline"
-                >
-                  Send
-                </Button>
+                <Button onClick={sentMessageHandler} disabled={!text.trim()} variant="secondary">Send</Button>
               </div>
             </div>
           </div>

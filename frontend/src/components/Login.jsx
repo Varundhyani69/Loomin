@@ -19,8 +19,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Get redirect path from query string (default to home)
-  const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
+  const redirectPath =
+    new URLSearchParams(location.search).get("redirect") || "/";
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -34,16 +34,14 @@ const Login = () => {
         "http://localhost:8080/api/v1/user/login",
         input,
         {
-          headers: {
-            "Content-type": "application/json",
-          },
+          headers: { "Content-type": "application/json" },
           withCredentials: true,
         }
       );
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
-        navigate(redirectPath); // ✅ Navigate after login
+        navigate(redirectPath);
         setInput({ email: "", password: "" });
       }
     } catch (error) {
@@ -54,49 +52,54 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center w-screen h-screen justify-center">
+    <div className="flex items-center justify-center min-h-screen bg-[#121212] text-white px-4">
       <form
         onSubmit={loginHandler}
-        className="shadow-lg flex flex-col gap-5 p-8"
+        className="w-full max-w-md bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] rounded-xl p-8 space-y-6"
       >
-        <div className="my-4">
-          <h1 className="text-center font-bold text-xl">LOGIN</h1>
-        </div>
+        <h1 className="text-2xl font-bold text-center">Welcome Back</h1>
+
         <div>
-          <span className="font-medium">Email</span>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <Input
             type="email"
             name="email"
             value={input.email}
             onChange={changeEventHandler}
-            className="focus-visible:ring-transparent my-2"
+            className="bg-[#2a2a2a] text-white border-none focus:ring-0"
+            required
           />
         </div>
+
         <div>
-          <span className="font-medium">Password</span>
+          <label className="block text-sm font-medium mb-1">Password</label>
           <Input
             type="password"
             name="password"
             value={input.password}
             onChange={changeEventHandler}
-            className="focus-visible:ring-transparent my-2"
+            className="bg-[#2a2a2a] text-white border-none focus:ring-0"
+            required
           />
         </div>
+
         {loading ? (
-          <Button>
+          <Button disabled className="w-full bg-[#333]">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Please Wait
+            Logging in...
           </Button>
         ) : (
-          <Button type="submit">Login</Button>
+          <Button type="submit" className="w-full bg-[#0095F6] hover:bg-[#007adf]">
+            Login
+          </Button>
         )}
 
-        <span className="text-center">
-          Don't have an account{" "}
-          <Link to="/signup" className="text-blue-600">
+        <p className="text-center text-sm text-gray-400">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-blue-500 hover:underline">
             Register
           </Link>
-        </span>
+        </p>
       </form>
     </div>
   );

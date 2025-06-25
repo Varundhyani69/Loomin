@@ -70,7 +70,7 @@ const Messages = ({ selectedUser }) => {
     const safeMessages = Array.isArray(messages) ? messages : [];
 
     return (
-        <div className='overflow-y-auto flex-1 p-4'>
+        <div className='overflow-y-auto  flex-1 p-4'>
             <div className="flex justify-center mb-4">
                 <div className='flex flex-col items-center justify-center'>
                     <Avatar>
@@ -96,17 +96,17 @@ const Messages = ({ selectedUser }) => {
 
                         return (
                             <div key={msg._id || i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-xs p-2 rounded-lg ${isMe ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'}`}>
+                                <div className={`max-w-xs px-4 py-2 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.3)] ${isMe ? 'bg-[#2a2a2a]' : 'bg-[#3a3a3a]'}`}>
                                     {msg.message && <div>{msg.message}</div>}
-
-                                    {sharedPost && sharedPost?.image && (
-                                        <div className='mt-2 w-60 h-60 cursor-pointer' onClick={() => handlePostClick(sharedPost)}>
-                                            <img src={sharedPost.image} alt="Shared Post" className='w-60 h-60 rounded-sm  object-cover mb-1' />
-                                            <p className='text-xs italic text-white/80'>{sharedPost.caption}</p>
+                                    {msg.postId?.image && (
+                                        <div className="mt-2 w-60 h-60 cursor-pointer" onClick={() => handlePostClick(msg.postId)}>
+                                            <img src={msg.postId.image} alt="Shared Post" className="w-full h-full object-cover rounded-md" />
+                                            <p className="text-xs italic text-white/80 mt-1">{msg.postId.caption}</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
+
                         );
                     })}
                     <div ref={messagesEndRef} />

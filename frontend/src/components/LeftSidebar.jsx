@@ -122,61 +122,70 @@ const LeftSidebar = () => {
 
     return (
         <>
-            <div className="fixed top-0 z-10 left-0 px-4 border-4 border-gray-300 w-[16%] h-screen">
-                <div className="flex flex-col">
-                    <h1 className="my-8 pl-3 font-bold">Logo</h1>
-                    <div>
-                        {SidebarItems.map((item, index) => (
-                            <div
-                                key={index}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    sidebarHandler(item.text);
-                                }}
-                                className="flex items-center gap-3 relative hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3"
-                            >
-                                {item.icon}
-                                <span>{item.text}</span>
-                            </div>
-                        ))}
-                    </div>
+            <div className="hidden md:flex fixed top-0 left-0 z-10 h-screen w-72 flex-col bg-[#1e1e1e] text-white border-r border-gray-800 shadow-[4px_0_10px_rgba(0,0,0,0.4)] px-4">
+                <h1 className="my-8 text-xl font-bold">Logo</h1>
+                <div className="space-y-3">
+                    {SidebarItems.map((item, index) => (
+                        <div
+                            key={index}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                sidebarHandler(item.text);
+                            }}
+                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#2a2a2a] cursor-pointer transition-all"
+                        >
+                            {item.icon}
+                            <span>{item.text}</span>
+                        </div>
+                    ))}
                 </div>
                 <CreatePost open={open} setOpen={setOpen} />
-            </div>
+            </div >
 
             {/* ✅ Search Popup Dialog */}
             <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
                 <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-                <DialogContent className="bg-white z-50 w-full max-w-md fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl shadow-lg">
+                <DialogContent className="bg-[#1e1e1e] text-white z-50 w-full max-w-md fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl shadow-2xl">
                     <h2 className="text-xl font-semibold mb-4">Search Users</h2>
+
                     <Input
                         placeholder="Type username..."
                         value={query}
                         onChange={handleSearch}
-                        className="mb-4"
+                        className="mb-4 bg-[#2a2a2a] text-white border border-gray-700 focus-visible:ring-0"
                     />
-                    <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
-                        {results.length > 0 ? results.map((u) => (
-                            <div
-                                key={u._id}
-                                onClick={() => {
-                                    navigate(`/profile/${u._id}`);
-                                    setSearchOpen(false);
-                                    setQuery('');
-                                    setResults([]);
-                                }}
-                                className="flex items-center gap-3 p-2 cursor-pointer hover:bg-gray-100 rounded-md"
-                            >
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={u.profilePicture} />
-                                    <AvatarFallback>{u.username[0]}</AvatarFallback>
-                                </Avatar>
-                                <span>{u.username}</span>
-                            </div>
-                        )) : query && <span className="text-sm text-gray-500">No users found</span>}
+
+                    <div className="flex flex-col gap-2 max-h-60 overflow-y-auto custom-scroll">
+                        {results.length > 0 ? (
+                            results.map((u) => (
+                                <div
+                                    key={u._id}
+                                    onClick={() => {
+                                        navigate(`/profile/${u._id}`);
+                                        setSearchOpen(false);
+                                        setQuery('');
+                                        setResults([]);
+                                    }}
+                                    className="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#2e2e2e] rounded-md transition"
+                                >
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage
+                                            src={u.profilePicture}
+                                            alt={u.username}
+                                            className="rounded-full object-cover"
+                                        />
+                                        <AvatarFallback>{u.username[0]?.toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm font-medium">{u.username}</span>
+                                </div>
+                            ))
+                        ) : (
+                            query && <span className="text-sm text-gray-400">No users found</span>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
+
         </>
     );
 };

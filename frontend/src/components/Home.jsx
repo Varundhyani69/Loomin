@@ -7,15 +7,18 @@ import useGetSuggestedUsers from "@/hooks/useGetSuggestedUsers"
 const Home = () => {
   useGetAllPosts();
   useGetSuggestedUsers();
+
   return (
-    <div className="flex">
+    <div className="flex flex-col md:flex-row bg-[#121212] min-h-screen">
       <div className="flex-grow">
         <Feed />
         <Outlet />
       </div>
-      <RightSidebar />
+      <div className="hidden xl:block">
+        <RightSidebar />
+      </div>
     </div>
   )
 }
 
-export default Home
+export default Home;

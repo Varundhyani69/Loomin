@@ -10,26 +10,34 @@ const RightSidebar = () => {
   if (!user) return null;
 
   return (
-    <div className="w-fit my-10 pr-30">
-      <div className="flex items-center gap-2">
+    <aside className="w-full max-w-xs pr-15 px-4 py-8 text-white">
+      {/* User Profile Preview */}
+      <div className="flex items-center gap-4 mb-6">
         <Link to={`/profile/${user._id}`}>
           <Avatar>
-            <AvatarImage className='rounded-full h-12 w-12' src={user?.profilePicture} alt="User" />
+            <AvatarImage
+              className="rounded-full h-12 w-12 object-cover"
+              src={user?.profilePicture}
+              alt={user?.username}
+            />
             <AvatarFallback>{user?.username?.[0] || "U"}</AvatarFallback>
           </Avatar>
         </Link>
         <div>
-          <h1 className="font-semibold text-sm">
-            <Link to={`/profile/${user._id}`}>{user?.username}</Link>
+          <h1 className="font-semibold text-sm leading-none">
+            <Link to={`/profile/${user._id}`} className="hover:underline">
+              {user?.username}
+            </Link>
           </h1>
-          <span className="text-gray-600 text-sm">
-            {user?.bio || "Bio Here..."}
-          </span>
+          <p className="text-xs text-gray-400 mt-1">
+            {user?.bio || "No bio yet."}
+          </p>
         </div>
       </div>
 
+      {/* Suggested Users */}
       <SuggestedUsers />
-    </div>
+    </aside>
   );
 };
 

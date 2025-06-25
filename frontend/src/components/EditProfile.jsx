@@ -1,20 +1,20 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import axios from 'axios';
 import { Loader } from 'lucide-react';
-import { setAuthUser } from '@/redux/authSlice';
+import { setAuthUser, logoutUser } from '@/redux/authSlice';
 import { toast } from 'sonner';
-import { logoutUser } from '@/redux/authSlice';
 
 const EditProfile = () => {
     const imageRef = useRef();
     const { user } = useSelector(store => store.auth);
     const [loading, setLoading] = useState(false);
     const [previewImage, setPreviewImage] = useState(user?.profilePicture);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const [input, setInput] = useState({
         profilePhoto: null,
@@ -33,10 +33,6 @@ const EditProfile = () => {
         }
     };
 
-    const selectChangeHandler = (value) => {
-        setInput({ ...input, gender: value });
-    };
-
     const editProfileHandler = async () => {
         const formData = new FormData();
         formData.append("bio", input.bio);
@@ -47,20 +43,18 @@ const EditProfile = () => {
         try {
             setLoading(true);
             const res = await axios.post('http://localhost:8080/api/v1/user/profile/edit', formData, {
-                headers: {
-                    'Content-type': 'multipart/form-data'
-                },
+                headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true
             });
 
             if (res.data.success) {
-                const updatedUserData = {
+                const updatedUser = {
                     ...user,
                     bio: res.data.user?.bio,
                     profilePicture: res.data.user?.profilePicture,
                     gender: res.data.user?.gender
                 };
-                dispatch(setAuthUser(updatedUserData));
+                dispatch(setAuthUser(updatedUser));
                 navigate(`/profile/${user._id}`);
                 toast.success(res.data.message);
             }
@@ -70,7 +64,6 @@ const EditProfile = () => {
             setLoading(false);
         }
     };
-    const [showConfirm, setShowConfirm] = useState(false);
 
     const handleDeleteAccount = async () => {
         try {
@@ -78,51 +71,54 @@ const EditProfile = () => {
             dispatch(logoutUser());
             navigate('/signup');
         } catch (err) {
-            console.error(err);
             toast.error("Failed to delete account");
         }
     };
 
-
     return (
-        <div className='ml-130 flex max-2xl mx-auto pl-10'>
-            <section className='flex flex-col gap-6 w-150'>
-                <h1 className='font-bold text-xl'>Edit Profile</h1>
+        <div className=" p-6 text-white bg-[#121212] min-h-screen">
+            <section className="max-w-xl mx-auto flex flex-col gap-6">
+                <h1 className="text-2xl font-bold">Edit Profile</h1>
 
-                <div className="flex items-center justify-between bg-gray-100 rounded-xl p-4 gap-5">
-                    <div className="flex items-center gap-8">
+                {/* Profile Avatar */}
+                <div className="flex justify-between items-center p-4 bg-[#1e1e1e] rounded-xl shadow-md">
+                    <div className="flex gap-4 items-center">
                         <Avatar>
-                            <AvatarImage className='h-32 w-32 rounded-full object-cover' src={previewImage} alt="User" />
-                            <AvatarFallback>{user?.username?.[0] || "U"}</AvatarFallback>
+                            <AvatarImage className="h-20 w-20 rounded-full object-cover" src={previewImage} />
+                            <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <h1 className="font-bold text-m">
+                            <h2 className="font-semibold text-lg">
                                 <Link to={`/profile/${user._id}`}>{user?.username}</Link>
-                            </h1>
-                            <span className="text-gray-600">
-                                {input.bio || "Bio Here..."}
-                            </span>
+                            </h2>
+                            <p className="text-gray-400 text-sm">{input.bio || "No bio yet."}</p>
                         </div>
                     </div>
-
-                    <input ref={imageRef} type="file" onChange={fileChangeHandler} className='hidden' />
-                    <Button onClick={() => imageRef.current.click()} className="bg-[#0095F6] h-8 hover:bg-[#0094f6a0]">
-                        Change Photo
-                    </Button>
+                    <div>
+                        <input ref={imageRef} onChange={fileChangeHandler} type="file" className="hidden" />
+                        <Button onClick={() => imageRef.current.click()} className="bg-[#0095F6] hover:bg-[#0094f6a0]">
+                            Change Photo
+                        </Button>
+                    </div>
                 </div>
 
+                {/* Bio Input */}
                 <div>
-                    <h1 className='font-bold text-xl mb-2'>Bio</h1>
-                    <Textarea value={input.bio} onChange={(e) => setInput({ ...input, bio: e.target.value })} />
+                    <h2 className="text-lg font-semibold mb-2">Bio</h2>
+                    <Textarea
+                        value={input.bio}
+                        onChange={(e) => setInput({ ...input, bio: e.target.value })}
+                        className="bg-[#1e1e1e] text-white border-none focus:ring-0"
+                    />
                 </div>
 
+                {/* Gender Select */}
                 <div>
-                    <h1 className='font-bold text-xl mb-2'>Gender</h1>
+                    <h2 className="text-lg font-semibold mb-2">Gender</h2>
                     <select
-                        name="gender"
                         value={input.gender}
-                        onChange={(e) => selectChangeHandler(e.target.value)}
-                        className="w-[200px] px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0095F6] transition"
+                        onChange={(e) => setInput({ ...input, gender: e.target.value })}
+                        className="w-full px-4 py-2 rounded-lg bg-[#1e1e1e] border border-gray-700 text-sm text-white"
                     >
                         <option value="">Select gender</option>
                         <option value="male">👦 Male</option>
@@ -131,57 +127,46 @@ const EditProfile = () => {
                     </select>
                 </div>
 
-
-                <div className="gap-2">
-
-                    <div className='flex justify-end'>
-                        {loading ? (
-                            <Button className='w-full bg-[#0095F6] hover:bg-[#0094f6a9]'>
-                                <Loader className='mr-2 h-4 w-4 animate-spin' />Please wait
-                            </Button>
-                        ) : (
-                            <Button onClick={editProfileHandler} className='w-full bg-[#0095F6] hover:bg-[#0094f6a9]'>
-                                Submit
-                            </Button>
-                        )}
-                    </div>
-                    <div className="flex justify-end">
-                        <Button
-                            className=" mt-2 bg-red-500 hover:bg-red-600 text-white"
-                            onClick={() => setShowConfirm(true)}
-                        >
-                            Delete Account
+                {/* Buttons */}
+                <div className="flex flex-col gap-3">
+                    {loading ? (
+                        <Button disabled className="bg-[#0095F6]">
+                            <Loader className="mr-2 h-4 w-4 animate-spin" /> Please wait
                         </Button>
-
-                    </div>
+                    ) : (
+                        <Button onClick={editProfileHandler} className="bg-[#0095F6] hover:bg-[#0094f6a9]">
+                            Submit
+                        </Button>
+                    )}
+                    <Button
+                        variant="destructive"
+                        className="bg-red-500 hover:bg-red-600"
+                        onClick={() => setShowConfirm(true)}
+                    >
+                        Delete Account
+                    </Button>
                 </div>
             </section>
-            {/* Confirm Delete Modal */}
+
+            {/* Delete Confirmation Modal */}
             {showConfirm && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-md shadow-md max-w-sm w-full">
-                        <h2 className="text-lg font-semibold mb-4 text-center">Delete Account?</h2>
-                        <p className="text-sm text-gray-600 mb-6 text-center">
-                            This action cannot be undone. Are you sure you want to delete your account?
+                    <div className="bg-[#1e1e1e] text-white p-6 rounded-lg shadow-lg w-full max-w-sm space-y-4">
+                        <h2 className="text-xl font-bold text-center">Delete Account?</h2>
+                        <p className="text-sm text-gray-400 text-center">
+                            This action is irreversible. Are you sure you want to delete your account?
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button
-                                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-sm"
-                                onClick={() => setShowConfirm(false)}
-                            >
+                            <Button variant="outline" onClick={() => setShowConfirm(false)}>
                                 Cancel
-                            </button>
-                            <button
-                                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
-                                onClick={handleDeleteAccount}
-                            >
+                            </Button>
+                            <Button variant="destructive" onClick={handleDeleteAccount}>
                                 Yes, Delete
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

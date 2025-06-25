@@ -154,7 +154,7 @@ const Post = ({ post }) => {
     };
 
     return (
-        <div className='my-8 ml-150 w-full max-w-sm mx-auto'>
+        <div className='my-8 w-full max-w-md mx-auto rounded-2xl bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-4'>
             <div className='flex items-center justify-between'>
                 <div className="flex items-center gap-2">
                     <Avatar>
@@ -213,22 +213,40 @@ const Post = ({ post }) => {
                     {/* Share Dialog */}
                     <Dialog open={shareOpen} onOpenChange={setShareOpen}>
                         <DialogTrigger asChild>
-                            <Send className='cursor-pointer hover:text-gray-600' />
+                            <Send className="cursor-pointer hover:text-gray-400 transition" />
                         </DialogTrigger>
+
                         <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-                        <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-96 rounded-md bg-white p-6 shadow-xl focus:outline-none z-50">
-                            <h2 className='text-lg font-bold mb-4'>Share Post</h2>
+
+                        <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-xl bg-[#1e1e1e] text-white p-6 shadow-2xl z-50">
+                            <h2 className="text-lg font-bold mb-4">Share Post</h2>
+
                             {followings.length === 0 ? (
-                                <p className='text-gray-500'>You're not following anyone.</p>
+                                <p className="text-sm text-gray-400">You're not following anyone.</p>
                             ) : (
-                                <div className='flex flex-col gap-2 max-h-64 overflow-y-auto'>
-                                    {followings.map(f => (
-                                        <div key={f._id} className='flex items-center justify-between'>
-                                            <div className='flex items-center gap-2'>
-                                                <Avatar><AvatarImage className='h-12 w-12 rounded-full' src={f.profilePicture} /><AvatarFallback>CN</AvatarFallback></Avatar>
-                                                <span>{f.username}</span>
+                                <div className="flex flex-col gap-3 max-h-64 overflow-y-auto custom-scroll">
+                                    {followings.map((f) => (
+                                        <div
+                                            key={f._id}
+                                            className="flex items-center justify-between bg-[#2a2a2a] hover:bg-[#2f2f2f] rounded-lg px-3 py-2 transition"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarImage
+                                                        className="h-10 w-10 rounded-full object-cover"
+                                                        src={f.profilePicture}
+                                                    />
+                                                    <AvatarFallback>{f.username[0]?.toUpperCase()}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="text-sm font-medium">{f.username}</span>
                                             </div>
-                                            <Button onClick={() => handleSharePost(f._id)} size="sm">Send</Button>
+                                            <Button
+                                                onClick={() => handleSharePost(f._id)}
+                                                size="sm"
+                                                className="bg-[#0095F6] hover:bg-[#007adf] text-white px-4 py-1 text-xs"
+                                            >
+                                                Send
+                                            </Button>
                                         </div>
                                     ))}
                                 </div>
@@ -239,7 +257,7 @@ const Post = ({ post }) => {
 
                 <Bookmark
                     onClick={toggleBookmarkHandler}
-                    className={`cursor-pointer hover:text-gray-600 ${isBookmarked ? 'fill-black' : ''}`}
+                    className={`cursor-pointer hover:text-gray-600 ${isBookmarked ? 'fill-white' : ''}`}
                 />
             </div>
 

@@ -6,10 +6,11 @@ const Notification = () => {
     const notifications = useSelector((state) => state.notification.notifications);
 
     return (
-        <div className="p-6 ml-[16%]">
-            <h1 className="text-xl font-bold mb-4">Notifications</h1>
+        <div className="p-6  min-h-screen bg-[#121212] text-white">
+            <h1 className="text-2xl font-bold mb-6">Notifications</h1>
+
             {notifications.length === 0 ? (
-                <p className="text-gray-500">No notifications yet.</p>
+                <p className="text-gray-400 text-sm">No notifications yet.</p>
             ) : (
                 <ul className="space-y-4">
                     {notifications.map((noti, index) => {
@@ -33,13 +34,23 @@ const Notification = () => {
                         }
 
                         return (
-                            <li key={index} className="bg-white border rounded-lg p-4 flex gap-3 items-center shadow-sm">
+                            <li
+                                key={index}
+                                className="bg-[#1e1e1e] rounded-xl p-4 flex items-center gap-4 shadow-[0_4px_10px_rgba(0,0,0,0.4)] transition hover:bg-[#2a2a2a]"
+                            >
                                 <Avatar>
-                                    <AvatarImage className='h-12 w-12 rounded-full' src={noti.userDetails?.profilePicture} alt={noti.userDetails?.username} />
-                                    <AvatarFallback>{noti.userDetails?.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
+                                    <AvatarImage
+                                        className="h-12 w-12 rounded-full"
+                                        src={noti.userDetails?.profilePicture}
+                                        alt={noti.userDetails?.username}
+                                    />
+                                    <AvatarFallback>
+                                        {noti.userDetails?.username?.charAt(0)?.toUpperCase()}
+                                    </AvatarFallback>
                                 </Avatar>
-                                <span className="text-sm font-medium">
-                                    {noti.userDetails?.username} <span className="text-gray-600">{actionMessage}</span>
+                                <span className="text-sm">
+                                    <span className="font-semibold">{noti.userDetails?.username}</span>{" "}
+                                    <span className="text-gray-400">{actionMessage}</span>
                                 </span>
                             </li>
                         );

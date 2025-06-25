@@ -106,7 +106,7 @@ const Profile = () => {
   )?.slice().sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
 
   return (
-    <div className='ml-80 flex max-w-5xl mx-auto justify-center pl-10'>
+    <div className=' flex max-w-5xl mx-auto justify-center pl-10'>
       <div className="flex flex-col gap-12 p-8">
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-10">
@@ -131,7 +131,6 @@ const Profile = () => {
                       <Link to='/account/edit'>
                         <Button variant='secondary' className="h-8 text-sm">Edit Profile</Button>
                       </Link>
-                      <Button variant='secondary' className="h-8 text-sm">View Archive</Button>
                       <Button
                         variant='secondary'
                         className="h-8 text-sm"
@@ -195,31 +194,29 @@ const Profile = () => {
             >
               SAVED
             </span>
-            <span className='py-3 cursor-pointer text-gray-400'>REELS</span>
-            <span className='py-3 cursor-pointer text-gray-400'>TAGS</span>
           </div>
 
           {/* Posts Grid */}
           {Array.isArray(displayedPost) && displayedPost.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {displayedPost.map((post) => (
                 <div
                   key={post._id}
-                  className='relative group cursor-pointer'
+                  className="relative group cursor-pointer"
                   onClick={() => handlePostClick(post)}
                 >
                   <img
-                    className='rounded-sm w-full aspect-square object-cover'
+                    className="rounded-lg aspect-square object-cover w-full"
                     src={post.image}
                     alt="post_img"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-50 transition-opacity duration-300">
-                    <div className='flex items-center text-white space-x-4'>
-                      <div className='flex items-center gap-1'>
+                    <div className="flex items-center text-white space-x-4">
+                      <div className="flex items-center gap-1">
                         <Heart size={16} />
                         <span>{post.likes?.length || 0}</span>
                       </div>
-                      <div className='flex items-center gap-1'>
+                      <div className="flex items-center gap-1">
                         <MessageCircle size={16} />
                         <span>{post.comments?.length || 0}</span>
                       </div>
