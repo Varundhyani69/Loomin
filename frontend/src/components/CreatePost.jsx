@@ -116,7 +116,7 @@ const CreatePost = ({ open, setOpen }) => {
         <div className="flex justify-between gap-2">
           <Button
             onClick={() => imageRef.current.click()}
-            className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:opacity-90"
+            className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:opacity-90 cursor-pointer"
           >
             Select from computer
           </Button>
