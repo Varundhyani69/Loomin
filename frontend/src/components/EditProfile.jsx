@@ -157,7 +157,7 @@ const EditProfile = () => {
                             This action is irreversible. Are you sure you want to delete your account?
                         </p>
                         <div className="flex justify-end gap-3">
-                            <Button variant="outline" onClick={() => setShowConfirm(false)}>
+                            <Button className='text-black' variant="outline" onClick={() => setShowConfirm(false)}>
                                 Cancel
                             </Button>
                             <Button variant="destructive" onClick={handleDeleteAccount}>

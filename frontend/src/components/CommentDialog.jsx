@@ -150,17 +150,17 @@ const CommentDialog = ({ open, setOpen }) => {
                   <div className="absolute right-0 top-6 bg-[#2a2a2a] text-white border border-gray-700 rounded-md p-2 hidden group-hover:block z-50 text-sm">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-white hover:bg-[#333]"
+                      className="w-full justify-start text-white hover:bg-[#fff]"
                       onClick={() => {
                         setIsEditing(true);
                         setEditedCaption(selectedPost.caption || "");
                       }}
                     >
-                      <Pencil size={16} className="mr-2" /> Edit Caption
+                      <Pencil size={16} className="mr-2 hover:text-black " /> Edit Caption
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-red-500 hover:bg-[#331]"
+                      className="w-full justify-start text-red-500 hover:bg-[#fff]"
                       onClick={deletePostHandler}
                     >
                       <Trash2 size={16} className="mr-2" /> Delete Post
