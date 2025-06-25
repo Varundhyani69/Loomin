@@ -11,6 +11,13 @@ import { setupSocket } from "./socket/socket.js";
 
 dotenv.config();
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Needed to use __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Validate environment variables
 if (!process.env.PORT || !process.env.MONGO_URI) {
     console.error("Error: Missing required environment variables (PORT or MONGO_URI)");
