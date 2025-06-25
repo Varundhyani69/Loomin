@@ -38,6 +38,17 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/message", messageRoute);
 
+// Redirect root to login
+app.get("/", (req, res) => {
+    res.redirect("/login"); // or a frontend route like "/"
+});
+
+// Serve frontend
+app.use(express.static(path.join(__dirname, "frontend/src/components")));
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "frontend/src/components/Login.jsx"));
+});
+
 // Global error-handling middleware
 app.use((err, req, res, next) => {
     console.error("Unhandled error:", err);
