@@ -3,6 +3,9 @@ import express, { urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import connectDB from "./utils/db.js";
 import userRoute from "./routes/userRoute.js";
 import postRoute from "./routes/postRoute.js";
@@ -11,16 +14,13 @@ import { setupSocket } from "./socket/socket.js";
 
 dotenv.config();
 
-import path from "path";
-import { fileURLToPath } from "url";
-
-// Needed to use __dirname in ES modules
+// Get __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Validate environment variables
 if (!process.env.PORT || !process.env.MONGO_URI) {
-    console.error("Error: Missing required environment variables (PORT or MONGO_URI)");
+    console.error("❌ Missing PORT or MONGO_URI in .env");
     process.exit(1);
 }
 
@@ -33,7 +33,10 @@ app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: ["http://localhost:5173", "http://localhost:5174"], // Support multiple frontend ports
+        origin: [
+            "http://localhost:5173",
+            "https://your-frontend-domain.com" // ✅ Replace with deployed frontend domain
+        ],
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
     })
@@ -45,33 +48,30 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/message", messageRoute);
 
-// Redirect root to login
-app.get("/", (req, res) => {
-    res.redirect("/login"); // or a frontend route like "/"
-});
+// ✅ Serve Frontend (Vite build output)
+const frontendPath = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendPath));
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, "frontend/src/components")));
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend/src/components/Login.jsx"));
+    res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-// Global error-handling middleware
+// Error Handler
 app.use((err, req, res, next) => {
     console.error("Unhandled error:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
 });
 
-// Connect to DB and start server
+// Start Server with DB & Socket
 const startServer = async () => {
     try {
-        await connectDB(); // Wait for DB connection
+        await connectDB();
         const server = setupSocket(app);
         server.listen(port, () => {
-            console.log(`🚀 Server listening on port ${port}`);
+            console.log(`🚀 Server running on port ${port}`);
         });
-    } catch (error) {
-        console.error("Failed to start server:", error);
+    } catch (err) {
+        console.error("Failed to start server:", err);
         process.exit(1);
     }
 };
