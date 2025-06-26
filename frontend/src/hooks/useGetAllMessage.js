@@ -11,15 +11,14 @@ const useGetAllMessage = (userId) => {
 
         const fetchMessages = async () => {
             try {
-                const res = await axios.get(`http://localhost:8080/api/v1/message/all/${userId}`, {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/message/all/${userId}`, {
                     withCredentials: true,
                 });
-
                 if (res.data.success && Array.isArray(res.data.messages)) {
                     dispatch(setMessage(res.data.messages));
                 }
             } catch (err) {
-                console.error('Error loading messages', err);
+                console.error('Error loading messages:', err);
             }
         };
 

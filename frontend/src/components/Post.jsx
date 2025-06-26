@@ -51,7 +51,7 @@ const Post = ({ post }) => {
         if (!text.trim()) return;
         try {
             const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/comment`,
+                `${import.meta.env.VITE_API_URL}/post/${post._id}/comment`,
                 { text },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
@@ -59,7 +59,7 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 console.log("[Comment] Added:", res.data.comment);
                 const updatedPostRes = await axios.get(
-                    `http://localhost:8080/api/v1/post/${post._id}`,
+                    `${import.meta.env.VITE_API_URL}/post/${post._id}`,
                     { withCredentials: true }
                 );
                 const updatedPost = updatedPostRes.data.post;
@@ -70,14 +70,14 @@ const Post = ({ post }) => {
             }
         } catch (err) {
             console.error("[Comment] Failed:", err);
-            toast.error("Failed to comment");
+            toast.error(err?.response?.data?.message || "Failed to comment");
         }
     };
 
     const toggleBookmarkHandler = async () => {
         try {
             const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/bookmark`,
+                `${import.meta.env.VITE_API_URL}/post/${post._id}/bookmark`,
                 {},
                 { withCredentials: true }
             );
@@ -87,7 +87,7 @@ const Post = ({ post }) => {
                 return toast.error(res.data.message || "Failed to update bookmark");
             }
 
-            const userRes = await axios.get("http://localhost:8080/api/v1/user/profile", {
+            const userRes = await axios.get(`${import.meta.env.VITE_API_URL}/user/profile`, {
                 withCredentials: true
             });
 
@@ -101,7 +101,7 @@ const Post = ({ post }) => {
             toast.success(res.data.message);
         } catch (err) {
             console.error("[Bookmark] Failed:", err);
-            toast.error("Bookmark failed");
+            toast.error(err?.response?.data?.message || "Bookmark failed");
         }
     };
 
@@ -111,7 +111,7 @@ const Post = ({ post }) => {
             console.log(`${liked ? '💔 Unliking' : '❤️ Liking'} post:`, post._id);
 
             const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/${action}`,
+                `${import.meta.env.VITE_API_URL}/post/${post._id}/${action}`,
                 {},
                 { withCredentials: true }
             );
@@ -119,7 +119,7 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 console.log("✅ Like/Dislike updated:", res.data.message);
                 const updatedPostRes = await axios.get(
-                    `http://localhost:8080/api/v1/post/${post._id}`,
+                    `${import.meta.env.VITE_API_URL}/post/${post._id}`,
                     { withCredentials: true }
                 );
                 const updatedPost = updatedPostRes.data.post;
@@ -132,26 +132,26 @@ const Post = ({ post }) => {
             }
         } catch (error) {
             console.error("❌ Like/Dislike failed:", error);
-            toast.error("Failed to update like/dislike");
+            toast.error(error?.response?.data?.message || "Failed to update like/dislike");
         }
     };
 
     const fetchFollowings = async () => {
         try {
-            const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/user/followings`, {
                 withCredentials: true,
             });
             setFollowings(res.data.followings || []);
             console.log("[Share] Loaded followings:", res.data.followings);
         } catch (error) {
-            toast.error("Failed to load followings");
+            toast.error(error?.response?.data?.message || "Failed to load followings");
             console.error("[Share] Error loading followings:", error);
         }
     };
 
     const handleSharePost = async (receiverId) => {
         try {
-            await axios.post(`http://localhost:8080/api/v1/message/send/${receiverId}`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/message/send/${receiverId}`, {
                 message: `Check out this post!`,
                 postId: post._id,
             }, { withCredentials: true });
@@ -160,7 +160,7 @@ const Post = ({ post }) => {
             setShareOpen(false);
         } catch (err) {
             console.error("[Share] Failed to send post:", err);
-            toast.error("Failed to share");
+            toast.error(err?.response?.data?.message || "Failed to share");
         }
     };
 
@@ -170,7 +170,6 @@ const Post = ({ post }) => {
 
     return (
         <div className='my-8 w-full max-w-md mx-auto rounded-2xl bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-4'>
-            {/* top bar */}
             <div className='flex items-center justify-between'>
                 <div className="flex items-center gap-2">
                     <Avatar>
@@ -184,8 +183,6 @@ const Post = ({ post }) => {
                     </Link>
                 </div>
             </div>
-
-            {/* post image */}
             <img
                 onClick={() => {
                     dispatch(setSelectedPost(post));
@@ -195,8 +192,6 @@ const Post = ({ post }) => {
                 src={post.image}
                 alt="post_image"
             />
-
-            {/* post actions */}
             <div className="flex items-center justify-between">
                 <div className='flex items-center gap-3'>
                     {liked ? (
@@ -211,7 +206,6 @@ const Post = ({ post }) => {
                         }}
                         className='cursor-pointer hover:text-gray-400'
                     />
-                    {/* Share Post */}
                     <Dialog open={shareOpen} onOpenChange={setShareOpen}>
                         <DialogTrigger asChild>
                             <Send className='cursor-pointer hover:text-gray-400' />
@@ -219,7 +213,6 @@ const Post = ({ post }) => {
                         <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
                         <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-lg bg-[#1e1e1e] p-6 shadow-xl focus:outline-none z-50">
                             <h2 className="text-xl font-semibold text-white mb-4">Share Post</h2>
-
                             <input
                                 type="text"
                                 placeholder="Search by username..."
@@ -227,7 +220,6 @@ const Post = ({ post }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-
                             {filteredFollowings.length === 0 ? (
                                 <p className="text-gray-400">No users found</p>
                             ) : (
@@ -256,7 +248,6 @@ const Post = ({ post }) => {
                     className={`cursor-pointer hover:text-gray-600 ${isBookmarked ? 'fill-white text-white' : 'text-gray-400'}`}
                 />
             </div>
-
             <span className='font-medium block mb-2 text-white'>{postLike} likes</span>
             <p className='text-white'>
                 <Link to={`/profile/${post.author._id}`}>
@@ -264,7 +255,6 @@ const Post = ({ post }) => {
                 </Link>
                 {post.caption}
             </p>
-
             {post.comments.length > 0 ? (
                 <span className='cursor-pointer text-sm text-gray-400' onClick={() => {
                     dispatch(setSelectedPost(post));
@@ -276,10 +266,7 @@ const Post = ({ post }) => {
                     setOpen(true);
                 }}>Be first to comment</span>
             )}
-
             <CommentDialog open={open} setOpen={setOpen} />
-
-            {/* Add Comment */}
             <div className='flex items-center justify-between mt-2'>
                 <input
                     type="text"

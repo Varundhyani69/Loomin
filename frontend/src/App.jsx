@@ -45,7 +45,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    const socketio = io(process.env.VITE_API_URL, {
+    const socketio = io(import.meta.env.VITE_API_URL, {
       query: { userId: user._id },
       withCredentials: true,
       transports: ["websocket", "polling"],

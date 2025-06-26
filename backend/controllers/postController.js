@@ -34,7 +34,10 @@ export const getFollowingPosts = async (req, res) => {
 
 export const getAllPost = async (req, res) => {
     try {
-        const user = await User.findById(req.id);
+        const user = await User.findById(req.user._id); // Fixed from req.id
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
         const followingIds = user.following;
         const posts = await Post.find({ author: { $in: followingIds } })
             .populate("author", "username profilePicture")
@@ -42,16 +45,17 @@ export const getAllPost = async (req, res) => {
                 path: 'comments',
                 populate: {
                     path: 'author',
-                    select: 'username profilePicture'
-                }
+                    select: 'username profilePicture',
+                },
             })
             .sort({ createdAt: -1 });
         return res.json({
             success: true,
-            posts
+            posts,
         });
     } catch (error) {
-        console.log(error);
+        console.error("getAllPost error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };
 

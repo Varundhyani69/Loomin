@@ -24,7 +24,7 @@ const Signup = () => {
         try {
             setLoading(true);
             const res = await axios.post(
-                "http://localhost:8080/api/v1/user/register",
+                `${import.meta.env.VITE_API_URL}/user/register`,
                 input,
                 {
                     headers: { "Content-type": "application/json" },
@@ -50,7 +50,6 @@ const Signup = () => {
                 className="w-full max-w-md bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] rounded-xl p-8 space-y-6"
             >
                 <h1 className="text-2xl font-bold text-center">Create Your Account</h1>
-
                 <div>
                     <label className="block text-sm font-medium mb-1">Username</label>
                     <Input
@@ -62,7 +61,6 @@ const Signup = () => {
                         required
                     />
                 </div>
-
                 <div>
                     <label className="block text-sm font-medium mb-1">Email</label>
                     <Input
@@ -74,7 +72,6 @@ const Signup = () => {
                         required
                     />
                 </div>
-
                 <div>
                     <label className="block text-sm font-medium mb-1">Password</label>
                     <Input
@@ -86,7 +83,6 @@ const Signup = () => {
                         required
                     />
                 </div>
-
                 {loading ? (
                     <Button disabled className="w-full bg-[#333]">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -97,7 +93,6 @@ const Signup = () => {
                         Sign Up
                     </Button>
                 )}
-
                 <p className="text-center text-sm text-gray-400">
                     Already have an account?{" "}
                     <Link to="/login" className="text-blue-500 hover:underline">

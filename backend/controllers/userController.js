@@ -71,27 +71,26 @@ export const login = async (req, res) => {
             bio: user.bio,
             followers: user.followers,
             following: user.following,
-            posts: populatedPosts
+            posts: populatedPosts,
         };
 
-        return res.cookie('token', token, {
-            httpOnly: true,
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000
-        }).json({
-            success: true,
-            message: `Welcome back ${user.username}`,
-            user
-        });
-
-
+        return res
+            .cookie('token', token, {
+                httpOnly: true,
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000,
+            })
+            .json({
+                success: true,
+                message: `Welcome back ${user.username}`,
+                user,
+            });
     } catch (error) {
-        console.log(error);
+        console.error("Login error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
 
 // LOGOUT
 export const logout = async (req, res) => {
@@ -168,20 +167,18 @@ export const editProfile = async (req, res) => {
 export const getSuggestesUser = async (req, res) => {
     try {
         const user = req.user;
-
-        // 💥 FIX: check if user is valid
         if (!user || !user.following) {
             return res.status(400).json({ success: false, message: "Invalid user or no following list" });
         }
 
-        const followingIds = user.following.map(id => id.toString());
-
+        const followingIds = user.following.map((id) => id.toString());
         const suggestions = await User.find({
-            _id: { $ne: user._id, $nin: followingIds }
-        }).limit(10).select("username profilePicture");
+            _id: { $ne: user._id, $nin: followingIds },
+        })
+            .limit(10)
+            .select("username profilePicture");
 
-        res.status(200).json({ success: true, suggestions });
-
+        res.status(200).json({ success: true, users: suggestions }); // Fixed response key to match frontend
     } catch (err) {
         console.error("getSuggestesUser error:", err);
         res.status(500).json({ success: false, message: "Server error" });

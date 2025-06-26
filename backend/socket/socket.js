@@ -1,4 +1,3 @@
-// socket/socket.js
 import { Server } from "socket.io";
 import http from "http";
 
@@ -12,7 +11,7 @@ const setupSocket = (app) => {
 
     io = new Server(server, {
         cors: {
-            origin: process.env.VITE_API_URL,
+            origin: process.env.FRONTEND_URL || "https://loomin-production.up.railway.app",
             methods: ["GET", "POST"],
             credentials: true,
         },
@@ -23,12 +22,14 @@ const setupSocket = (app) => {
 
         if (userId) {
             userSocketMap[userId] = socket.id;
+            console.log(`User connected: ${userId}, Socket: ${socket.id}`);
         }
 
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
         socket.on("disconnect", () => {
             if (userId) {
+                console.log(`User disconnected: ${userId}, Socket: ${socket.id}`);
                 delete userSocketMap[userId];
             }
             io.emit("getOnlineUsers", Object.keys(userSocketMap));

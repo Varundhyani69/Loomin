@@ -37,7 +37,7 @@ const Profile = () => {
 
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/v1/user/followorunfollow/${userProfile._id}`,
+        `${import.meta.env.VITE_API_URL}/user/followorunfollow/${userProfile._id}`,
         {},
         { withCredentials: true }
       );
@@ -45,7 +45,7 @@ const Profile = () => {
       toast.success(res.data.message);
 
       const profileRes = await axios.get(
-        `http://localhost:8080/api/v1/user/${userProfile._id}/profile`,
+        `${import.meta.env.VITE_API_URL}/user/${userProfile._id}/profile`,
         { withCredentials: true }
       );
 
@@ -56,7 +56,7 @@ const Profile = () => {
       setIsFollowing(data.followers.includes(user._id));
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong");
+      toast.error(err?.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -70,7 +70,7 @@ const Profile = () => {
 
   const handlePostClick = async (post) => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/v1/post/${post._id}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/post/${post._id}`, {
         withCredentials: true
       });
       if (res.data.success) {
@@ -79,6 +79,7 @@ const Profile = () => {
       }
     } catch (err) {
       console.error("Failed to fetch full post", err);
+      toast.error(err?.response?.data?.message || "Failed to fetch post");
     }
   };
 
@@ -106,9 +107,8 @@ const Profile = () => {
   )?.slice().sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
 
   return (
-    <div className=' flex max-w-5xl mx-auto justify-center pl-10'>
+    <div className='flex max-w-5xl mx-auto justify-center pl-10'>
       <div className="flex flex-col gap-12 p-8">
-        {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-10">
           <section className='flex items-center justify-center'>
             <Avatar className="h-40 items-center flex justify-center w-40">
@@ -120,7 +120,6 @@ const Profile = () => {
               <AvatarFallback className="text-xl">{userProfile?.username?.[0] || 'U'}</AvatarFallback>
             </Avatar>
           </section>
-
           <section>
             <div className='flex flex-col gap-5 items-center sm:items-start text-center sm:text-left'>
               <div>
@@ -165,21 +164,17 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-
               <div className='flex items-center gap-6 text-sm'>
                 <p><span className='font-semibold'>{userProfile?.posts?.length || 0}</span> Posts</p>
                 <p><span className='font-semibold'>{userProfile?.followers?.length || 0}</span> Followers</p>
                 <p><span className='font-semibold'>{userProfile?.following?.length || 0}</span> Following</p>
               </div>
-
               <div className='flex flex-col gap-1 text-sm'>
                 <span className='font-semibold'>{userProfile?.bio || 'bio here...'}</span>
               </div>
             </div>
           </section>
         </div>
-
-        {/* Post Tabs */}
         <div className='border-t border-gray-200'>
           <div className="flex items-center justify-center gap-10 text-sm mb-6">
             <span
@@ -195,8 +190,6 @@ const Profile = () => {
               SAVED
             </span>
           </div>
-
-          {/* Posts Grid */}
           {Array.isArray(displayedPost) && displayedPost.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {displayedPost.map((post) => (
@@ -229,7 +222,6 @@ const Profile = () => {
             <div className="text-center text-gray-500">No posts to display</div>
           )}
         </div>
-
         <CommentDialog open={open} setOpen={setOpen} />
       </div>
     </div>

@@ -43,7 +43,7 @@ const Messages = ({ selectedUser }) => {
 
             if (newMsg?.postId && typeof newMsg.postId === 'string') {
                 try {
-                    const res = await axios.get(`http://localhost:8080/api/v1/post/${newMsg.postId}`, {
+                    const res = await axios.get(`${import.meta.env.VITE_API_URL}/post/${newMsg.postId}`, {
                         withCredentials: true,
                     });
                     if (res.data.success) {

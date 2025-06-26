@@ -9,18 +9,21 @@ const isAuthenticated = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.userId);
+        if (!decoded.userId) {
+            return res.status(401).json({ success: false, message: "Invalid token" });
+        }
 
+        const user = await User.findById(decoded.userId);
         if (!user) {
             return res.status(401).json({ success: false, message: "User not found" });
         }
 
         req.user = user;
-        req.id = user._id; // ✅ important
+        req.id = user._id;
         next();
     } catch (error) {
-        console.error("Auth Middleware Error:", error);
-        res.status(500).json({ success: false, message: "Authentication failed" });
+        console.error("Auth Middleware Error:", error.message);
+        res.status(401).json({ success: false, message: `Authentication failed: ${error.message}` });
     }
 };
 

@@ -23,13 +23,13 @@ const ChatPage = () => {
     useEffect(() => {
         const fetchFollowings = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/user/followings`, {
                     withCredentials: true,
                 });
                 const users = res.data.users || res.data.followings || [];
                 setFollowings(Array.isArray(users) ? users : []);
             } catch (err) {
-                toast.error("Failed to fetch followings");
+                toast.error(err?.response?.data?.message || "Failed to fetch followings");
                 setFollowings([]);
             }
         };
@@ -64,7 +64,7 @@ const ChatPage = () => {
     const sendMessageHandler = async (receiverId) => {
         try {
             const res = await axios.post(
-                `http://localhost:8080/api/v1/message/send/${receiverId}`,
+                `${import.meta.env.VITE_API_URL}/message/send/${receiverId}`,
                 { message: textMessage },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
@@ -74,7 +74,7 @@ const ChatPage = () => {
                 setTextMessage("");
             }
         } catch (error) {
-            toast.error(error.message || "Error sending message");
+            toast.error(error?.response?.data?.message || "Error sending message");
         }
     };
 
@@ -85,7 +85,6 @@ const ChatPage = () => {
 
     return (
         <div className='flex h-screen'>
-            {/* Sidebar */}
             <section className="w-full md:w-1/4 h-screen overflow-y-auto bg-[#1e1e1e] text-white border-r border-gray-700 px-3 py-6">
                 <h1 className='font-bold mb-3 p-3 text-xl'>{user?.username}</h1>
                 <hr className='mb-4 border-gray-300' />
@@ -122,8 +121,6 @@ const ChatPage = () => {
                     )}
                 </div>
             </section>
-
-            {/* Chat Area */}
             {selectedUser ? (
                 <section className="flex-1 flex flex-col h-screen bg-[#121212] text-white">
                     <div className='flex gap-3 items-center px-3 py-2 border-b border-gray-300 sticky top-0 z-10'>
