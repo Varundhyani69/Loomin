@@ -13,12 +13,11 @@ import CommentDialog from './CommentDialog';
 const Messages = ({ selectedUser }) => {
     const dispatch = useDispatch();
     const socket = useContext(SocketContext);
-    const { messages } = useSelector(state => state.chat);
-    const currentUserId = useSelector(state => state.auth.user?._id);
+    const { messages } = useSelector((state) => state.chat);
+    const currentUserId = useSelector((state) => state.auth.user?._id);
     const messagesEndRef = useRef(null);
     const [selectedPostData, setSelectedPostData] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const selectedUserIdRef = useRef(selectedUser?._id);
 
     useGetAllMessage(selectedUser?._id);
 
@@ -28,7 +27,6 @@ const Messages = ({ selectedUser }) => {
 
     useEffect(() => {
         if (selectedUser?._id) {
-            selectedUserIdRef.current = selectedUser._id;
             dispatch(setHasNewMessage(false));
         }
     }, [selectedUser?._id, dispatch]);
@@ -50,21 +48,19 @@ const Messages = ({ selectedUser }) => {
                         newMsg.postId = res.data.post;
                     }
                 } catch (err) {
-                    console.error("📩 Error fetching shared post:", err);
+                    console.error('📩 Error fetching shared post:', err);
                 }
             }
 
             if (isChatOpen) {
-                console.log("📩 Appending live message:", newMsg);
                 dispatch(appendMessage(newMsg));
             } else {
-                console.log("📩 Message received but not in current chat");
                 dispatch(setHasNewMessage(true));
             }
         };
 
-        socket.on("newMessage", handleNewMessage);
-        return () => socket.off("newMessage", handleNewMessage);
+        socket.on('newMessage', handleNewMessage);
+        return () => socket.off('newMessage', handleNewMessage);
     }, [socket, selectedUser?._id, dispatch]);
 
     const handlePostClick = (post) => {
@@ -109,7 +105,10 @@ const Messages = ({ selectedUser }) => {
                                 key={`${msg._id}-${i}`}
                                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                             >
-                                <div className={`max-w-xs px-4 py-2 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.3)] ${isMe ? 'bg-[#2a2a2a]' : 'bg-[#3a3a3a]'}`}>
+                                <div
+                                    className={`max-w-xs px-4 py-2 rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.3)] ${isMe ? 'bg-[#2a2a2a]' : 'bg-[#3a3a3a]'
+                                        }`}
+                                >
                                     {msg.message && <div>{msg.message}</div>}
                                     {post?.image && (
                                         <div

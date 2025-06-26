@@ -2,14 +2,14 @@ import {
   Dialog,
   DialogContent,
   DialogOverlay,
-  DialogTitle
+  DialogTitle,
 } from '@radix-ui/react-dialog';
 import React, { useRef, useState } from 'react';
 import { DialogHeader } from './ui/dialog';
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage
+  AvatarImage,
 } from '@radix-ui/react-avatar';
 import { readFileAsDataURL } from '@/lib/utils';
 import { Textarea } from './ui/textarea';
@@ -22,14 +22,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
 import { setUserProfile } from '@/redux/authSlice';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
+
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
   const [file, setFile] = useState('');
   const [caption, setCaption] = useState('');
   const [imagePrev, setImagePrev] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, userProfile } = useSelector(store => store.auth);
-  const { posts } = useSelector(store => store.post);
+  const { user, userProfile } = useSelector((store) => store.auth);
+  const { posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
 
   const fileChangeHandler = async (e) => {
@@ -41,14 +43,20 @@ const CreatePost = ({ open, setOpen }) => {
     }
   };
 
+  const resetForm = () => {
+    setCaption('');
+    setFile('');
+    setImagePrev('');
+  };
+
   const createPostHandler = async () => {
     const formData = new FormData();
-    formData.append("caption", caption);
-    if (imagePrev) formData.append("image", file);
+    formData.append('caption', caption);
+    if (imagePrev) formData.append('image', file);
 
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:8080/api/v1/post/addpost', formData, {
+      const res = await axios.post(`${API_BASE_URL}/api/v1/post/addpost`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -58,17 +66,15 @@ const CreatePost = ({ open, setOpen }) => {
         dispatch(setPosts([newPost, ...posts]));
         dispatch(setUserProfile({
           ...userProfile,
-          posts: [newPost, ...userProfile.posts],
+          posts: [newPost, ...(userProfile?.posts || [])],
         }));
         window.dispatchEvent(new Event('postCreated'));
-        toast.success(res.data.message);
+        toast.success(res.data.message || "Post created!");
         setOpen(false);
-        setCaption('');
-        setFile('');
-        setImagePrev('');
+        resetForm();
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || "Failed to create post");
     } finally {
       setLoading(false);
     }
@@ -84,10 +90,13 @@ const CreatePost = ({ open, setOpen }) => {
 
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage className="h-12 w-12 rounded-full" src={user?.profilePicture} />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage
+              className="h-12 w-12 rounded-full object-cover"
+              src={user?.profilePicture || ""}
+            />
+            <AvatarFallback>{user?.username?.[0]?.toUpperCase() || "U"}</AvatarFallback>
           </Avatar>
-          <h1 className="font-semibold text-sm">{user?.username}</h1>
+          <h1 className="font-semibold text-sm">{user?.username || "User"}</h1>
         </div>
 
         {imagePrev && (
@@ -106,6 +115,7 @@ const CreatePost = ({ open, setOpen }) => {
           type="file"
           className="hidden"
         />
+
         <Textarea
           placeholder="Write a caption..."
           value={caption}
@@ -113,23 +123,24 @@ const CreatePost = ({ open, setOpen }) => {
           className="bg-[#2a2a2a] text-white border-none focus:ring-0"
         />
 
-        <div className="flex justify-between gap-2">
-          <Button
-            onClick={() => imageRef.current.click()}
-            className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:opacity-90 cursor-pointer"
-          >
-            Select from computer
-          </Button>
-        </div>
+        <Button
+          onClick={() => imageRef.current.click()}
+          className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:opacity-90"
+        >
+          Select from computer
+        </Button>
 
         {imagePrev && (
           loading ? (
             <Button disabled className="w-full bg-[#333]">
-              <Loader2 className="cursor-pointer mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Uploading...
             </Button>
           ) : (
-            <Button onClick={createPostHandler} className=" cursor-pointer w-full bg-[#0095F6] hover:bg-[#007be6]">
+            <Button
+              onClick={createPostHandler}
+              className="w-full bg-[#0095F6] hover:bg-[#007be6]"
+            >
               Post
             </Button>
           )

@@ -5,12 +5,12 @@ import { Link } from 'react-router-dom';
 import SuggestedUsers from './SuggestedUsers';
 
 const RightSidebar = () => {
-  const { user } = useSelector(store => store.auth);
+  const { user } = useSelector((store) => store.auth);
 
   if (!user) return null;
 
   return (
-    <aside className="w-full max-w-xs pr-15 px-4 py-8 text-white">
+    <aside className="w-full max-w-xs px-4 py-8 text-white">
       {/* User Profile Preview */}
       <div className="flex items-center gap-4 mb-6">
         <Link to={`/profile/${user._id}`}>
@@ -20,7 +20,7 @@ const RightSidebar = () => {
               src={user?.profilePicture}
               alt={user?.username}
             />
-            <AvatarFallback>{user?.username?.[0] || "U"}</AvatarFallback>
+            <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
           </Avatar>
         </Link>
         <div>
@@ -30,7 +30,7 @@ const RightSidebar = () => {
             </Link>
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            {user?.bio || "No bio yet."}
+            {user?.bio || 'No bio yet.'}
           </p>
         </div>
       </div>

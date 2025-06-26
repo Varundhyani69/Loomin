@@ -6,7 +6,7 @@ const Notification = () => {
     const notifications = useSelector((state) => state.notification.notifications);
 
     return (
-        <div className="p-6  min-h-screen bg-[#121212] text-white">
+        <div className="p-6 min-h-screen bg-[#121212] text-white">
             <h1 className="text-2xl font-bold mb-6">Notifications</h1>
 
             {notifications.length === 0 ? (
@@ -14,23 +14,25 @@ const Notification = () => {
             ) : (
                 <ul className="space-y-4">
                     {notifications.map((noti, index) => {
-                        let actionMessage = "";
+                        const username = noti.userDetails?.username || 'Someone';
+                        const profilePicture = noti.userDetails?.profilePicture;
 
+                        let actionMessage = '';
                         switch (noti.type) {
                             case 'like':
-                                actionMessage = "liked your post";
+                                actionMessage = 'liked your post';
                                 break;
                             case 'dislike':
-                                actionMessage = "removed like from your post";
+                                actionMessage = 'removed like from your post';
                                 break;
                             case 'follow':
-                                actionMessage = "started following you";
+                                actionMessage = 'started following you';
                                 break;
                             case 'comment':
-                                actionMessage = "commented on your post";
+                                actionMessage = 'commented on your post';
                                 break;
                             default:
-                                actionMessage = noti.message || "sent you a notification";
+                                actionMessage = noti.message || 'sent you a notification';
                         }
 
                         return (
@@ -41,15 +43,13 @@ const Notification = () => {
                                 <Avatar>
                                     <AvatarImage
                                         className="h-12 w-12 rounded-full"
-                                        src={noti.userDetails?.profilePicture}
-                                        alt={noti.userDetails?.username}
+                                        src={profilePicture}
+                                        alt={username}
                                     />
-                                    <AvatarFallback>
-                                        {noti.userDetails?.username?.charAt(0)?.toUpperCase()}
-                                    </AvatarFallback>
+                                    <AvatarFallback>{username?.charAt(0)?.toUpperCase()}</AvatarFallback>
                                 </Avatar>
                                 <span className="text-sm">
-                                    <span className="font-semibold">{noti.userDetails?.username}</span>{" "}
+                                    <span className="font-semibold">{username}</span>{" "}
                                     <span className="text-gray-400">{actionMessage}</span>
                                 </span>
                             </li>

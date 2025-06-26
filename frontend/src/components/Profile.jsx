@@ -25,8 +25,8 @@ const Profile = () => {
   useGetUserProfile(userId, refreshFlag);
 
   useEffect(() => {
-    if (user && userProfile && Array.isArray(userProfile.followers)) {
-      setIsFollowing(userProfile.followers.includes(user._id));
+    if (user && userProfile?.followers?.includes(user._id)) {
+      setIsFollowing(true);
     } else {
       setIsFollowing(false);
     }
@@ -41,6 +41,7 @@ const Profile = () => {
         {},
         { withCredentials: true }
       );
+
       if (!res.data.success) return toast.error(res.data.message);
       toast.success(res.data.message);
 
@@ -61,7 +62,6 @@ const Profile = () => {
   };
 
   const shareProfileHandler = () => {
-    if (!userProfile?._id) return toast.error("Profile not loaded");
     const profileUrl = `${window.location.origin}/profile/${userProfile._id}`;
     navigator.clipboard.writeText(profileUrl)
       .then(() => toast.success("Profile link copied to clipboard!"))
@@ -83,9 +83,7 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    const handlePostCreated = () => {
-      setRefreshFlag((prev) => prev + 1);
-    };
+    const handlePostCreated = () => setRefreshFlag(prev => prev + 1);
     window.addEventListener('postCreated', handlePostCreated);
     return () => window.removeEventListener('postCreated', handlePostCreated);
   }, []);
@@ -93,30 +91,22 @@ const Profile = () => {
   if (!userProfile) {
     return (
       <div className='flex max-w-5xl mx-auto justify-center p-8'>
-        <div className="flex flex-col items-center gap-3">
-          <div className="text-gray-600">Loading profile...</div>
-        </div>
+        <div className="text-gray-600">Loading profile...</div>
       </div>
     );
   }
 
-  const displayedPost = (active === 'post'
-    ? userProfile?.posts
-    : userProfile?.bookmarks
-  )?.slice().sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
+  const displayedPosts = (active === 'post' ? userProfile.posts : userProfile.bookmarks) ?? [];
 
   return (
-    <div className=' flex max-w-5xl mx-auto justify-center pl-10'>
+    <div className='flex max-w-5xl mx-auto justify-center pl-10'>
       <div className="flex flex-col gap-12 p-8">
+
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-10">
           <section className='flex items-center justify-center'>
-            <Avatar className="h-40 items-center flex justify-center w-40">
-              <AvatarImage
-                className='h-full w-full object-cover rounded-full'
-                src={userProfile?.profilePicture}
-                alt="pfp"
-              />
+            <Avatar className="h-40 w-40">
+              <AvatarImage className='h-full w-full object-cover rounded-full' src={userProfile?.profilePicture} />
               <AvatarFallback className="text-xl">{userProfile?.username?.[0] || 'U'}</AvatarFallback>
             </Avatar>
           </section>
@@ -128,14 +118,8 @@ const Profile = () => {
                 <div className='flex items-center gap-2 mt-3 flex-wrap justify-center sm:justify-start'>
                   {isLoggedInUserProfile ? (
                     <>
-                      <Link to='/account/edit'>
-                        <Button variant='secondary' className="h-8 text-sm">Edit Profile</Button>
-                      </Link>
-                      <Button
-                        variant='secondary'
-                        className="h-8 text-sm"
-                        onClick={shareProfileHandler}
-                      >
+                      <Link to='/account/edit'><Button variant='secondary' className="h-8 text-sm">Edit Profile</Button></Link>
+                      <Button variant='secondary' className="h-8 text-sm" onClick={shareProfileHandler}>
                         <Share2 size={14} className="mr-1" /> Share Profile
                       </Button>
                     </>
@@ -144,21 +128,17 @@ const Profile = () => {
                       {user && (
                         <Button
                           onClick={followUnfollowHandler}
-                          className={`h-8 cursor-pointer text-sm ${isFollowing ? 'bg-gray-200 text-black' : 'bg-[#0095F6] text-white'}`}
+                          className={`h-8 text-sm ${isFollowing ? 'bg-gray-200 text-black' : 'bg-[#0095F6] text-white'}`}
                         >
                           {isFollowing ? 'Unfollow' : 'Follow'}
                         </Button>
                       )}
                       {isFollowing && user && (
                         <Link to="/chat">
-                          <Button variant='secondary' className="ml-2 h-8 text-sm cursor-pointer">Message</Button>
+                          <Button variant='secondary' className="ml-2 h-8 text-sm">Message</Button>
                         </Link>
                       )}
-                      <Button
-                        variant='secondary'
-                        className="ml-2 h-8 text-sm cursor-pointer"
-                        onClick={shareProfileHandler}
-                      >
+                      <Button variant='secondary' className="ml-2 h-8 text-sm" onClick={shareProfileHandler}>
                         <Share2 size={14} className="mr-1" /> Share Profile
                       </Button>
                     </>
@@ -172,14 +152,12 @@ const Profile = () => {
                 <p><span className='font-semibold'>{userProfile?.following?.length || 0}</span> Following</p>
               </div>
 
-              <div className='flex flex-col gap-1 text-sm'>
-                <span className='font-semibold'>{userProfile?.bio || 'bio here...'}</span>
-              </div>
+              <div className='text-sm font-semibold'>{userProfile?.bio || 'bio here...'}</div>
             </div>
           </section>
         </div>
 
-        {/* Post Tabs */}
+        {/* Tabs */}
         <div className='border-t border-gray-200'>
           <div className="flex items-center justify-center gap-10 text-sm mb-6">
             <span
@@ -196,10 +174,10 @@ const Profile = () => {
             </span>
           </div>
 
-          {/* Posts Grid */}
-          {Array.isArray(displayedPost) && displayedPost.length > 0 ? (
+          {/* Grid */}
+          {displayedPosts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {displayedPost.map((post) => (
+              {displayedPosts.map((post) => (
                 <div
                   key={post._id}
                   className="relative group cursor-pointer"
@@ -208,18 +186,12 @@ const Profile = () => {
                   <img
                     className="rounded-lg aspect-square object-cover w-full"
                     src={post.image}
-                    alt="post_img"
+                    alt="post"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-50 transition-opacity duration-300">
                     <div className="flex items-center text-white space-x-4">
-                      <div className="flex items-center gap-1">
-                        <Heart size={16} />
-                        <span>{post.likes?.length || 0}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageCircle size={16} />
-                        <span>{post.comments?.length || 0}</span>
-                      </div>
+                      <div className="flex items-center gap-1"><Heart size={16} /><span>{post.likes?.length || 0}</span></div>
+                      <div className="flex items-center gap-1"><MessageCircle size={16} /><span>{post.comments?.length || 0}</span></div>
                     </div>
                   </div>
                 </div>

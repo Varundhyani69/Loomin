@@ -1,11 +1,11 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
-import { useState } from "react";
-import axiosInstance from "@/utils/axios"; // using centralized axios instance
+import { useState, useEffect } from "react";
+import axiosInstance from "@/utils/axios";
 import { toast } from "sonner";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 
 const Login = () => {
@@ -19,8 +19,15 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { user } = useSelector((store) => store.auth);
+
   const redirectPath =
     new URLSearchParams(location.search).get("redirect") || "/";
+
+  // ✅ Redirect if already logged in
+  useEffect(() => {
+    if (user) navigate(redirectPath, { replace: true });
+  }, [user, navigate, redirectPath]);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -61,6 +68,7 @@ const Login = () => {
             onChange={changeEventHandler}
             className="bg-[#2a2a2a] text-white border-none focus:ring-0"
             required
+            autoComplete="off"
           />
         </div>
 
@@ -73,6 +81,7 @@ const Login = () => {
             onChange={changeEventHandler}
             className="bg-[#2a2a2a] text-white border-none focus:ring-0"
             required
+            autoComplete="off"
           />
         </div>
 

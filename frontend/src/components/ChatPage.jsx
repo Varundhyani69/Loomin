@@ -23,9 +23,10 @@ const ChatPage = () => {
     useEffect(() => {
         const fetchFollowings = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
-                    withCredentials: true,
-                });
+                const res = await axios.get(
+                    `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/api/v1/user/followings`,
+                    { withCredentials: true }
+                );
                 const users = res.data.users || res.data.followings || [];
                 setFollowings(Array.isArray(users) ? users : []);
             } catch (err) {
@@ -62,9 +63,10 @@ const ChatPage = () => {
     }, [socket, dispatch, selectedUser]);
 
     const sendMessageHandler = async (receiverId) => {
+        if (!textMessage.trim()) return toast.error("Message cannot be empty");
         try {
             const res = await axios.post(
-                `http://localhost:8080/api/v1/message/send/${receiverId}`,
+                `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/api/v1/message/send/${receiverId}`,
                 { message: textMessage },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
@@ -72,9 +74,11 @@ const ChatPage = () => {
                 dispatch(appendMessage(res.data.newMessage));
                 socket?.emit("newMessage", res.data.newMessage);
                 setTextMessage("");
+            } else {
+                toast.error(res.data.message || "Message sending failed");
             }
         } catch (error) {
-            toast.error(error.message || "Error sending message");
+            toast.error(error.response?.data?.message || "Error sending message");
         }
     };
 

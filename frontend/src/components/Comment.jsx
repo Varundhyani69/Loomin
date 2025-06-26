@@ -8,12 +8,15 @@ const Comment = ({ comment }) => {
         <Avatar>
           <AvatarImage
             className="h-10 w-10 rounded-full object-cover"
-            src={comment?.author?.profilePicture}
+            src={comment?.author?.profilePicture || ""}
+            alt="author"
           />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarFallback>
+            {comment?.author?.username?.[0]?.toUpperCase() || "U"}
+          </AvatarFallback>
         </Avatar>
         <p className="text-sm text-white">
-          <span className="font-semibold">{comment?.author?.username}</span>{' '}
+          <span className="font-semibold">{comment?.author?.username}</span>{" "}
           <span className="text-gray-300">{comment?.text}</span>
         </p>
       </div>
