@@ -168,7 +168,7 @@ export const getSuggestesUser = async (req, res) => {
         const user = req.user;
 
         // 💥 FIX: check if user is valid
-        if (!user || !user.following) {
+        if (!user) {
             return res.status(400).json({ success: false, message: "Invalid user or no following list" });
         }
 
@@ -178,7 +178,7 @@ export const getSuggestesUser = async (req, res) => {
             _id: { $ne: user._id, $nin: followingIds }
         }).limit(10).select("username profilePicture");
 
-        res.status(200).json({ success: true, suggestions });
+        res.status(200).json({ success: true, users: suggestions });
 
     } catch (err) {
         console.error("getSuggestesUser error:", err);

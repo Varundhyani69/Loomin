@@ -13,9 +13,7 @@ import { setSelectedPost } from '@/redux/postSlice';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-
 const Profile = () => {
-
   const { id: userId } = useParams();
   const dispatch = useDispatch();
   const { userProfile, user } = useSelector((store) => store.auth);
@@ -101,6 +99,7 @@ const Profile = () => {
   }
 
   const displayedPosts = (active === 'post' ? userProfile.posts : userProfile.bookmarks) ?? [];
+  const sortedPosts = [...displayedPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
     <div className='flex max-w-5xl mx-auto justify-center pl-10'>
@@ -178,9 +177,9 @@ const Profile = () => {
           </div>
 
           {/* Grid */}
-          {displayedPosts.length > 0 ? (
+          {sortedPosts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {displayedPosts.map((post) => (
+              {sortedPosts.map((post) => (
                 <div
                   key={post._id}
                   className="relative group cursor-pointer"
