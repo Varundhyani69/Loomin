@@ -23,9 +23,17 @@ router.get('/followings', isAuthenticated, getFollowings);
 router.get('/search', isAuthenticated, searchUsers);
 router.get('/bookmarks', isAuthenticated, getUserBookmarks);
 
+// ✅ GET logged-in user if token cookie exists
+router.get("/me", isAuthenticated, (req, res) => {
+    res.status(200).json({ success: true, user: req.user });
+});
+
+
 // ✅ MESSAGES
 router.post('/message/send/:id', isAuthenticated, sendMessage);
 router.get('/message/all/:id', isAuthenticated, getMessage);
 router.get("/profile", isAuthenticated, getMyProfile);
+
+
 
 export default router;

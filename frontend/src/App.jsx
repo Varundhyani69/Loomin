@@ -15,12 +15,33 @@ import { setOnlineUsers, setHasNewMessage, appendMessage } from "./redux/chatSli
 import { addNotification, setHasNewNotification } from "./redux/notificationSlice";
 import SocketContext from "./context/SocketContext";
 import { toast } from "sonner";
+import axios from "axios";
+import { setAuthUser } from "./redux/authSlice";
 
 function App() {
   const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true); // 🔁 new
 
+  // ✅ Auto-login using cookies
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:8080/api/v1/user/me", {
+          withCredentials: true,
+        });
+        dispatch(setAuthUser(data.user));
+      } catch (err) {
+        console.log("User not authenticated");
+      } finally {
+        setLoading(false); // 🔁 only stop loading when done
+      }
+    };
+    fetchUser();
+  }, [dispatch]);
+
+  // ✅ Connect socket after user is set
   useEffect(() => {
     if (!user) return;
 
@@ -48,15 +69,12 @@ function App() {
     });
 
     socketio.on("newMessage", (msg) => {
-      console.log("📩 Received new message:", msg);
-
       if (
         !selectedUser ||
         (msg.senderId !== selectedUser._id && msg.receiverId !== selectedUser._id)
       ) {
         dispatch(setHasNewMessage(true));
       }
-
       dispatch(appendMessage(msg));
     });
 
@@ -96,6 +114,9 @@ function App() {
     { path: "/login", element: <Login /> },
     { path: "/signup", element: <Signup /> },
   ]);
+
+  // 🔁 Show loading screen while checking cookies
+  if (loading) return <div className="text-center p-10">Loading...</div>;
 
   return (
     <SocketContext.Provider value={socket}>
