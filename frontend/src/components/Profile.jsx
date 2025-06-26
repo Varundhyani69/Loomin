@@ -15,7 +15,7 @@ const Profile = () => {
   const { id: userId } = useParams();
   const dispatch = useDispatch();
   const { userProfile, user } = useSelector((store) => store.auth);
-  const isLoggedInUserProfile = user?._id === userProfile?._id;
+  const isLoggedInUserProfile = user?._id && userProfile?._id && user._id === userProfile._id;
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [active, setActive] = useState('post');
@@ -33,7 +33,7 @@ const Profile = () => {
   }, [userProfile, user]);
 
   const followUnfollowHandler = async () => {
-    if (!user) return toast.error("Please log in to follow/unfollow");
+    if (!user || !userProfile?._id) return toast.error("Please log in to follow/unfollow");
 
     try {
       const res = await axios.post(
@@ -53,7 +53,7 @@ const Profile = () => {
       if (!data) return toast.error("Could not fetch updated profile");
 
       dispatch(setUserProfile(data));
-      setIsFollowing(data.followers.includes(user._id));
+      setIsFollowing(data.followers?.includes(user._id) || false);
     } catch (err) {
       console.error(err);
       toast.error(err?.response?.data?.message || "Something went wrong");
@@ -69,6 +69,7 @@ const Profile = () => {
   };
 
   const handlePostClick = async (post) => {
+    if (!post?._id) return;
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/post/${post._id}`, {
         withCredentials: true
@@ -104,7 +105,7 @@ const Profile = () => {
   const displayedPost = (active === 'post'
     ? userProfile?.posts
     : userProfile?.bookmarks
-  )?.slice().sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
+  )?.slice().sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0)) || [];
 
   return (
     <div className='flex max-w-5xl mx-auto justify-center pl-10'>
@@ -169,7 +170,7 @@ const Profile = () => {
                 <p><span className='font-semibold'>{userProfile?.followers?.length || 0}</span> Followers</p>
                 <p><span className='font-semibold'>{userProfile?.following?.length || 0}</span> Following</p>
               </div>
-              <div className='flex flex-col gap-1 text-sm'>
+              <div className='flex flex-col gap-1 text बुध, 25 जून 2025 03:53:50 +0000 text-sm'>
                 <span className='font-semibold'>{userProfile?.bio || 'bio here...'}</span>
               </div>
             </div>
@@ -194,7 +195,7 @@ const Profile = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {displayedPost.map((post) => (
                 <div
-                  key={post._id}
+                  key={post?._id}
                   className="relative group cursor-pointer"
                   onClick={() => handlePostClick(post)}
                 >

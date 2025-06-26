@@ -68,10 +68,15 @@ const Messages = ({ selectedUser }) => {
     }, [socket, selectedUser?._id, dispatch]);
 
     const handlePostClick = (post) => {
+        if (!post?._id) return;
         dispatch(setSelectedPost(post));
         setSelectedPostData(post);
         setDialogOpen(true);
     };
+
+    if (!selectedUser || !currentUserId) {
+        return <div className="text-center text-gray-500">No user selected</div>;
+    }
 
     const safeMessages = Array.isArray(messages) ? messages : [];
 
@@ -82,19 +87,18 @@ const Messages = ({ selectedUser }) => {
                     <Avatar>
                         <AvatarImage
                             className="h-24 w-24 object-cover rounded-full"
-                            src={selectedUser?.profilePicture}
+                            src={selectedUser.profilePicture}
                         />
-                        <AvatarFallback>{selectedUser?.username?.[0]}</AvatarFallback>
+                        <AvatarFallback>{selectedUser.username?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
-                    <span>{selectedUser?.username}</span>
-                    <Link to={`/profile/${selectedUser?._id}`}>
+                    <span>{selectedUser.username || 'Unknown'}</span>
+                    <Link to={`/profile/${selectedUser._id}`}>
                         <Button className="h-8 my-2" variant="secondary">
                             View Profile
                         </Button>
                     </Link>
                 </div>
             </div>
-
             {safeMessages.length === 0 ? (
                 <div className="text-center text-gray-500">No messages to display</div>
             ) : (
@@ -131,7 +135,6 @@ const Messages = ({ selectedUser }) => {
                     <div ref={messagesEndRef} />
                 </div>
             )}
-
             <CommentDialog
                 open={dialogOpen}
                 setOpen={setDialogOpen}

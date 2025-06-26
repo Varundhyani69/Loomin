@@ -24,31 +24,31 @@ const Post = ({ post }) => {
 
     const [text, setText] = useState('');
     const [open, setOpen] = useState(false);
-    const [postLike, setPostLike] = useState(post.likes.length);
-    const [liked, setLiked] = useState(post.likes.includes(user?._id));
+    const [postLike, setPostLike] = useState(post?.likes?.length || 0);
+    const [liked, setLiked] = useState(user && post?.likes?.includes(user._id) || false);
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
     const [followings, setFollowings] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredFollowings = followings.filter((f) =>
-        f.username.toLowerCase().includes(searchQuery.toLowerCase())
+        f?.username?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     useEffect(() => {
-        if (user && Array.isArray(user.bookmarks)) {
+        if (user && Array.isArray(user.bookmarks) && post?._id) {
             setIsBookmarked(user.bookmarks.includes(post._id));
         } else {
             setIsBookmarked(false);
         }
-    }, [user, post._id]);
+    }, [user, post?._id]);
 
     const changeEventHandler = (e) => {
         setText(e.target.value);
     };
 
     const commentHandler = async () => {
-        if (!text.trim()) return;
+        if (!text.trim() || !post?._id) return;
         try {
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/post/${post._id}/comment`,
@@ -75,6 +75,7 @@ const Post = ({ post }) => {
     };
 
     const toggleBookmarkHandler = async () => {
+        if (!post?._id || !user) return;
         try {
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/post/${post._id}/bookmark`,
@@ -106,6 +107,7 @@ const Post = ({ post }) => {
     };
 
     const likeDislikeHandler = async () => {
+        if (!post?._id || !user) return;
         try {
             const action = liked ? 'dislike' : 'like';
             console.log(`${liked ? '💔 Unliking' : '❤️ Liking'} post:`, post._id);
@@ -137,6 +139,7 @@ const Post = ({ post }) => {
     };
 
     const fetchFollowings = async () => {
+        if (!user) return;
         try {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/user/followings`, {
                 withCredentials: true,
@@ -150,6 +153,7 @@ const Post = ({ post }) => {
     };
 
     const handleSharePost = async (receiverId) => {
+        if (!post?._id || !receiverId) return;
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/message/send/${receiverId}`, {
                 message: `Check out this post!`,
@@ -168,6 +172,10 @@ const Post = ({ post }) => {
         if (shareOpen) fetchFollowings();
     }, [shareOpen]);
 
+    if (!post || !post.author) {
+        return null; // Skip rendering if post or author is undefined
+    }
+
     return (
         <div className='my-8 w-full max-w-md mx-auto rounded-2xl bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-4'>
             <div className='flex items-center justify-between'>
@@ -175,11 +183,11 @@ const Post = ({ post }) => {
                     <Avatar>
                         <Link to={`/profile/${post.author._id}`}>
                             <AvatarImage className='h-10 w-10 rounded-full' src={post.author.profilePicture} alt='Post_Image' />
-                            <AvatarFallback>{post.author.username[0]}</AvatarFallback>
+                            <AvatarFallback>{post.author.username?.[0] || 'U'}</AvatarFallback>
                         </Link>
                     </Avatar>
                     <Link to={`/profile/${post.author._id}`}>
-                        <h1>{post.author.username}</h1>
+                        <h1>{post.author.username || 'Unknown'}</h1>
                     </Link>
                 </div>
             </div>
@@ -229,9 +237,9 @@ const Post = ({ post }) => {
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
                                                     <AvatarImage className='h-12 w-12' src={user.profilePicture} />
-                                                    <AvatarFallback>{user.username[0]}</AvatarFallback>
+                                                    <AvatarFallback>{user.username?.[0] || 'U'}</AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-white">{user.username}</span>
+                                                <span className="text-white">{user.username || 'Unknown'}</span>
                                             </div>
                                             <Button className='cursor-pointer' size="sm" onClick={() => handleSharePost(user._id)}>
                                                 Send
@@ -251,11 +259,11 @@ const Post = ({ post }) => {
             <span className='font-medium block mb-2 text-white'>{postLike} likes</span>
             <p className='text-white'>
                 <Link to={`/profile/${post.author._id}`}>
-                    <span className='font-medium mr-2'>{post.author.username}</span>
+                    <span className='font-medium mr-2'>{post.author.username || 'Unknown'}</span>
                 </Link>
                 {post.caption}
             </p>
-            {post.comments.length > 0 ? (
+            {post.comments?.length > 0 ? (
                 <span className='cursor-pointer text-sm text-gray-400' onClick={() => {
                     dispatch(setSelectedPost(post));
                     setOpen(true);
