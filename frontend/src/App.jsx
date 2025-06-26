@@ -24,11 +24,16 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(true); // 🔁 new
 
+  // Get API URL from env
+  const API_URL = import.meta.env.VITE_API_URL; // e.g. https://loomin-production.up.railway.app/api/v1
+  // Remove the "/api/v1" part for socket connection base URL
+  const socketBaseUrl = API_URL.replace(/\/api\/v1$/, "");
+
   // ✅ Auto-login using cookies
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await axios.get("http://localhost:8080/api/v1/user/me", {
+        const { data } = await axios.get(`${API_URL}/user/me`, {
           withCredentials: true,
         });
         dispatch(setAuthUser(data.user));
@@ -39,13 +44,13 @@ function App() {
       }
     };
     fetchUser();
-  }, [dispatch]);
+  }, [dispatch, API_URL]);
 
   // ✅ Connect socket after user is set
   useEffect(() => {
     if (!user) return;
 
-    const socketio = io("http://localhost:8080", {
+    const socketio = io(socketBaseUrl, {
       query: { userId: user._id },
       withCredentials: true,
       transports: ["websocket", "polling"],
@@ -92,7 +97,7 @@ function App() {
       socketio.disconnect();
       setSocket(null);
     };
-  }, [user, dispatch, selectedUser]);
+  }, [user, dispatch, selectedUser, socketBaseUrl]);
 
   const browserRouter = createBrowserRouter([
     {
