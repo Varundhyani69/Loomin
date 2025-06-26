@@ -14,33 +14,14 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setOnlineUsers, setHasNewMessage, appendMessage } from "./redux/chatSlice";
 import { addNotification, setHasNewNotification } from "./redux/notificationSlice";
-import { setAuthUser } from "./redux/authSlice";
 
 import SocketContext from "./context/SocketContext";
 import { toast } from "sonner";
-
-import axiosInstance from "@/utils/axios"; // ✅ updated import
 
 function App() {
   const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // ✅ Auto-login using axiosInstance
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data } = await axiosInstance.get("/user/me");
-        dispatch(setAuthUser(data.user));
-      } catch (err) {
-        console.log("User not authenticated");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, [dispatch]);
 
   // ✅ Connect socket after user is set
   useEffect(() => {
@@ -112,8 +93,6 @@ function App() {
     { path: "/login", element: <Login /> },
     { path: "/signup", element: <Signup /> },
   ]);
-
-  if (loading) return <div className="text-center p-10">Loading...</div>;
 
   return (
     <SocketContext.Provider value={socket}>

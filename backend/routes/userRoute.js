@@ -23,10 +23,6 @@ router.get('/followings', isAuthenticated, getFollowings);
 router.get('/search', isAuthenticated, searchUsers);
 router.get('/bookmarks', isAuthenticated, getUserBookmarks);
 
-// ✅ GET logged-in user if token cookie exists
-router.get("/me", isAuthenticated, (req, res) => {
-    res.status(200).json({ success: true, user: req.user });
-});
 
 
 // ✅ MESSAGES
