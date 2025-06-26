@@ -11,13 +11,6 @@ import { setupSocket } from "./socket/socket.js";
 
 dotenv.config();
 
-import path from "path";
-import { fileURLToPath } from "url";
-
-// Needed to use __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Validate environment variables
 if (!process.env.PORT || !process.env.MONGO_URI) {
     console.error("Error: Missing required environment variables (PORT or MONGO_URI)");
@@ -45,16 +38,7 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/message", messageRoute);
 
-// Redirect root to login
-app.get("/", (req, res) => {
-    res.redirect("/login"); // or a frontend route like "/"
-});
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, "frontend/src/components")));
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend/src/components/Login.jsx"));
-});
 
 // Global error-handling middleware
 app.use((err, req, res, next) => {
