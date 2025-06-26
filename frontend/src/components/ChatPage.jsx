@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { MessageCircleCode } from 'lucide-react';
 import Messages from './Messages';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axiosInstance from '@/utils/axios';   // <-- use axiosInstance here
 import { appendMessage, setHasNewMessage } from '@/redux/chatSlice';
 import SocketContext from '@/context/SocketContext';
 
@@ -23,9 +23,7 @@ const ChatPage = () => {
     useEffect(() => {
         const fetchFollowings = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
-                    withCredentials: true,
-                });
+                const res = await axiosInstance.get("/user/followings", { withCredentials: true });
                 const users = res.data.users || res.data.followings || [];
                 setFollowings(Array.isArray(users) ? users : []);
             } catch (err) {
@@ -63,8 +61,8 @@ const ChatPage = () => {
 
     const sendMessageHandler = async (receiverId) => {
         try {
-            const res = await axios.post(
-                `http://localhost:8080/api/v1/message/send/${receiverId}`,
+            const res = await axiosInstance.post(
+                `/message/send/${receiverId}`,
                 { message: textMessage },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );

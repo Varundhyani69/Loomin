@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import useGetAllMessage from '@/hooks/useGetAllMessage';
 import SocketContext from '@/context/SocketContext';
 import { appendMessage, setHasNewMessage } from '@/redux/chatSlice';
-import axios from 'axios';
+import axiosInstance from '@/utils/axios';
 import { setSelectedPost } from '@/redux/postSlice';
 import CommentDialog from './CommentDialog';
 
@@ -43,9 +43,8 @@ const Messages = ({ selectedUser }) => {
 
             if (newMsg?.postId && typeof newMsg.postId === 'string') {
                 try {
-                    const res = await axios.get(`http://localhost:8080/api/v1/post/${newMsg.postId}`, {
-                        withCredentials: true,
-                    });
+                    const res = await axiosInstance.get(`/post/${newMsg.postId}`);
+
                     if (res.data.success) {
                         newMsg.postId = res.data.post;
                     }

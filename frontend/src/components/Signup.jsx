@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
 import { useState } from "react";
-import axios from "axios";
+import axios from "@/utils/axios";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -24,12 +24,8 @@ const Signup = () => {
         try {
             setLoading(true);
             const res = await axios.post(
-                "http://localhost:8080/api/v1/user/register",
-                input,
-                {
-                    headers: { "Content-type": "application/json" },
-                    withCredentials: true
-                }
+                "/user/register", // ✅ Relative path
+                input
             );
             if (res.data.success) {
                 toast.success(res.data.message);

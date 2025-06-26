@@ -1,4 +1,3 @@
-// ✅ CommentDialog.jsx (Modern UI with logs)
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Dialog, DialogContent, DialogOverlay } from "@radix-ui/react-dialog";
 import { MoreHorizontal, Trash2, Pencil } from "lucide-react";
@@ -6,7 +5,7 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import Comment from "./Comment.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from '@/utils/axios';  // <-- use axiosInstance here
 import { toast } from "sonner";
 import { setPosts, setSelectedPost } from "@/redux/postSlice";
 import { setUserProfile } from "@/redux/authSlice";
@@ -28,19 +27,9 @@ const CommentDialog = ({ open, setOpen }) => {
   const sentMessageHandler = async () => {
     if (!text.trim()) return;
     try {
-      console.log("💬 [Add Comment] Sending:", text);
-      const res = await axios.post(
-        `http://localhost:8080/api/v1/post/${selectedPost._id}/comment`,
-        { text },
-        { withCredentials: true }
-      );
-
+      const res = await axiosInstance.post(`/post/${selectedPost._id}/comment`, { text });
       if (res.data.success) {
-        console.log("✅ [Add Comment] Added:", res.data.comment);
-
-        const getUpdatedPost = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, {
-          withCredentials: true,
-        });
+        const getUpdatedPost = await axiosInstance.get(`/post/${selectedPost._id}`);
         const updatedPost = getUpdatedPost.data.post;
 
         const updatedPosts = posts.map((p) =>
@@ -52,22 +41,14 @@ const CommentDialog = ({ open, setOpen }) => {
         toast.success("Comment added");
       }
     } catch (err) {
-      console.error("❌ [Add Comment] Failed:", err);
       toast.error("Failed to post comment");
     }
   };
 
   const deletePostHandler = async () => {
     try {
-      console.log("🗑️ [Delete Post] ID:", selectedPost._id);
-      const res = await axios.delete(
-        `http://localhost:8080/api/v1/post/delete/${selectedPost._id}`,
-        { withCredentials: true }
-      );
-
+      const res = await axiosInstance.delete(`/post/delete/${selectedPost._id}`);
       if (res.data.success) {
-        console.log("✅ [Delete Post] Success");
-
         dispatch(setPosts(posts.filter((p) => p._id !== selectedPost._id)));
         dispatch((dispatch, getState) => {
           const { auth } = getState();
@@ -78,27 +59,19 @@ const CommentDialog = ({ open, setOpen }) => {
         setOpen(false);
       }
     } catch (err) {
-      console.error("❌ [Delete Post] Failed:", err);
       toast.error("Delete failed");
     }
   };
 
   const updateCaptionHandler = async () => {
     try {
-      console.log("✏️ [Edit Caption] New:", editedCaption);
-      const res = await axios.put(
-        `http://localhost:8080/api/v1/post/${selectedPost._id}/edit-caption`,
-        { caption: editedCaption },
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.put(`/post/${selectedPost._id}/edit-caption`, {
+        caption: editedCaption,
+      });
 
       if (res.data.success) {
-        const getRes = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, {
-          withCredentials: true,
-        });
+        const getRes = await axiosInstance.get(`/post/${selectedPost._id}`);
         const updatedPost = getRes.data.post;
-
-        console.log("✅ [Edit Caption] Updated post:", updatedPost);
 
         const updatedPosts = posts.map((p) => (p._id === updatedPost._id ? updatedPost : p));
         dispatch(setPosts(updatedPosts));
@@ -115,7 +88,6 @@ const CommentDialog = ({ open, setOpen }) => {
         setIsEditing(false);
       }
     } catch (err) {
-      console.error("❌ [Edit Caption] Failed:", err);
       toast.error("Update failed");
     }
   };

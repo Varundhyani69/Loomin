@@ -12,7 +12,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import CommentDialog from './CommentDialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axiosInstance from '@/utils/axios';
 import { setPosts, setSelectedPost } from '@/redux/postSlice';
 import { setAuthUser } from '@/redux/authSlice';
 import { Link } from 'react-router-dom';
@@ -50,18 +50,11 @@ const Post = ({ post }) => {
     const commentHandler = async () => {
         if (!text.trim()) return;
         try {
-            const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/comment`,
-                { text },
-                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
-            );
+            const res = await axiosInstance.post(`/post/${post._id}/comment`, { text });
 
             if (res.data.success) {
                 console.log("[Comment] Added:", res.data.comment);
-                const updatedPostRes = await axios.get(
-                    `http://localhost:8080/api/v1/post/${post._id}`,
-                    { withCredentials: true }
-                );
+                const updatedPostRes = await axiosInstance.get(`/post/${post._id}`);
                 const updatedPost = updatedPostRes.data.post;
                 dispatch(setPosts(posts.map(p => p._id === post._id ? updatedPost : p)));
                 dispatch(setSelectedPost(updatedPost));
@@ -76,20 +69,14 @@ const Post = ({ post }) => {
 
     const toggleBookmarkHandler = async () => {
         try {
-            const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/bookmark`,
-                {},
-                { withCredentials: true }
-            );
+            const res = await axiosInstance.post(`/post/${post._id}/bookmark`);
 
             if (!res.data.success) {
                 console.warn("[Bookmark] Error:", res.data);
                 return toast.error(res.data.message || "Failed to update bookmark");
             }
 
-            const userRes = await axios.get("http://localhost:8080/api/v1/user/profile", {
-                withCredentials: true
-            });
+            const userRes = await axiosInstance.get("/user/profile");
 
             if (userRes.data.success) {
                 const updatedUser = userRes.data.user;
@@ -110,18 +97,13 @@ const Post = ({ post }) => {
             const action = liked ? 'dislike' : 'like';
             console.log(`${liked ? '💔 Unliking' : '❤️ Liking'} post:`, post._id);
 
-            const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/${action}`,
-                {},
-                { withCredentials: true }
-            );
+            const res = await axiosInstance.post(`/post/${post._id}/${liked ? 'dislike' : 'like'}`);
+
 
             if (res.data.success) {
                 console.log("✅ Like/Dislike updated:", res.data.message);
-                const updatedPostRes = await axios.get(
-                    `http://localhost:8080/api/v1/post/${post._id}`,
-                    { withCredentials: true }
-                );
+                const updatedPostRes = await axiosInstance.get(`/post/${post._id}`);
+
                 const updatedPost = updatedPostRes.data.post;
                 dispatch(setPosts(posts.map(p => p._id === post._id ? updatedPost : p)));
                 dispatch(setSelectedPost(updatedPost));
@@ -138,9 +120,8 @@ const Post = ({ post }) => {
 
     const fetchFollowings = async () => {
         try {
-            const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
-                withCredentials: true,
-            });
+            const res = await axiosInstance.get("/user/followings");
+
             setFollowings(res.data.followings || []);
             console.log("[Share] Loaded followings:", res.data.followings);
         } catch (error) {
@@ -151,10 +132,11 @@ const Post = ({ post }) => {
 
     const handleSharePost = async (receiverId) => {
         try {
-            await axios.post(`http://localhost:8080/api/v1/message/send/${receiverId}`, {
+            await axiosInstance.post(`/message/send/${receiverId}`, {
                 message: `Check out this post!`,
                 postId: post._id,
-            }, { withCredentials: true });
+            });
+
 
             toast.success("Post shared!");
             setShareOpen(false);

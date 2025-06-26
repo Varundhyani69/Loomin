@@ -10,7 +10,7 @@ import {
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axiosInstance from '@/utils/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuthUser } from '@/redux/authSlice';
 import CreatePost from './CreatePost';
@@ -32,9 +32,7 @@ const LeftSidebar = () => {
 
     const logoutHandler = async () => {
         try {
-            const res = await axios.post('http://localhost:8080/api/v1/user/logout', {
-                withCredentials: true,
-            });
+            const res = await axiosInstance.post('/user/logout');
             if (res.data.success) {
                 dispatch(setAuthUser(null));
                 navigate('/login', { replace: true });
@@ -44,6 +42,7 @@ const LeftSidebar = () => {
             toast.error(error.response?.data?.message || 'Something went wrong');
         }
     };
+
 
     const sidebarHandler = (textType) => {
         if (textType === 'Logout') logoutHandler();
@@ -71,9 +70,7 @@ const LeftSidebar = () => {
             return;
         }
         try {
-            const res = await axios.get(`http://localhost:8080/api/v1/user/search?username=${value}`, {
-                withCredentials: true,
-            });
+            const res = await axiosInstance.get(`/user/search?username=${value}`);
             if (res.data.success) {
                 setResults(res.data.users);
             }
@@ -81,6 +78,7 @@ const LeftSidebar = () => {
             console.error(err);
         }
     };
+
 
     const SidebarItems = [
         { icon: <Home />, text: 'Home' },
