@@ -14,7 +14,7 @@ export const getFollowingPosts = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid user or no following list" });
         }
 
-        const posts = await Post.find({ author: { $in: currentUser.following } })
+        const posts = await Post.find({ author: { $in: [...currentUser.following, currentUser._id] } })
             .populate("author", "username profilePicture")
             .populate({
                 path: 'comments',
