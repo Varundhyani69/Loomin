@@ -76,13 +76,15 @@ export const login = async (req, res) => {
 
         return res.cookie('token', token, {
             httpOnly: true,
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production',
             maxAge: 24 * 60 * 60 * 1000
         }).json({
             success: true,
             message: `Welcome back ${user.username}`,
             user
         });
+
 
     } catch (error) {
         console.log(error);
@@ -96,9 +98,10 @@ export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production'
         }).json({ success: true, message: "Logout successfully" });
+
     } catch (error) {
         console.log(error);
     }
