@@ -18,6 +18,7 @@ import { setPosts, setSelectedPost } from '@/redux/postSlice';
 import { setAuthUser } from '@/redux/authSlice';
 
 const Post = ({ post }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
   const dispatch = useDispatch();
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
@@ -63,7 +64,7 @@ const Post = ({ post }) => {
       );
 
       if (res.data.success) {
-        const resp = await axios.get(`/api/v1/post/${postId}`, {
+        const resp = await axios.get(`${API_BASE_URL}/post/${postId}`, {
           withCredentials: true,
         });
         const updatedPost = resp.data.post;

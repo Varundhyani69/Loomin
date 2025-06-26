@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
-import axiosInstance from "@/utils/axios";
+import axios from "axios";
 import { toast } from "sonner";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
 
 const Login = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
   const [input, setInput] = useState({
     email: "",
     password: "",
@@ -37,7 +38,9 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axiosInstance.post("/user/login", input);
+      const res = await axios.post(`${API_BASE_URL}/user/login`, input, {
+        withCredentials: true,
+      });
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);

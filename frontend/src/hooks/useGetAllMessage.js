@@ -1,4 +1,4 @@
-import axiosInstance from "@/utils/axios";
+import axios from "axios";
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '@/redux/chatSlice';
@@ -11,7 +11,10 @@ const useGetAllMessage = (userId) => {
 
         const fetchMessages = async () => {
             try {
-                const res = await axiosInstance.get(`/message/all/${userId}`);
+                const res = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/message/all/${userId}`,
+                    { withCredentials: true }
+                );
 
                 if (res.data.success && Array.isArray(res.data.messages)) {
                     dispatch(setMessage(res.data.messages));

@@ -24,7 +24,7 @@ const ChatPage = () => {
         const fetchFollowings = async () => {
             try {
                 const res = await axios.get(
-                    `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/api/v1/user/followings`,
+                    `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/user/followings`,
                     { withCredentials: true }
                 );
                 const users = res.data.users || res.data.followings || [];

@@ -31,7 +31,7 @@ const CommentDialog = ({ open, setOpen }) => {
     try {
       console.log("💬 [Add Comment] Sending:", text);
       const res = await axios.post(
-        `${API_BASE_URL}/api/v1/post/${selectedPost._id}/comment`,
+        `${API_BASE_URL}/post/${selectedPost._id}/comment`,
         { text },
         { withCredentials: true }
       );
@@ -39,7 +39,7 @@ const CommentDialog = ({ open, setOpen }) => {
       if (res.data.success) {
         console.log("✅ [Add Comment] Added:", res.data.comment);
         const getUpdatedPost = await axios.get(
-          `${API_BASE_URL}/api/v1/post/${selectedPost._id}`,
+          `${API_BASE_URL}/post/${selectedPost._id}`,
           { withCredentials: true }
         );
         const updatedPost = getUpdatedPost.data.post;
@@ -62,7 +62,7 @@ const CommentDialog = ({ open, setOpen }) => {
     try {
       console.log("🗑️ [Delete Post] ID:", selectedPost._id);
       const res = await axios.delete(
-        `${API_BASE_URL}/api/v1/post/delete/${selectedPost._id}`,
+        `${API_BASE_URL}/post/delete/${selectedPost._id}`,
         { withCredentials: true }
       );
 
@@ -87,13 +87,13 @@ const CommentDialog = ({ open, setOpen }) => {
     try {
       console.log("✏️ [Edit Caption] New:", editedCaption);
       const res = await axios.put(
-        `${API_BASE_URL}/api/v1/post/${selectedPost._id}/edit-caption`,
+        `${API_BASE_URL}/post/${selectedPost._id}/edit-caption`,
         { caption: editedCaption },
         { withCredentials: true }
       );
 
       if (res.data.success) {
-        const getRes = await axios.get(`${API_BASE_URL}/api/v1/post/${selectedPost._id}`, {
+        const getRes = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, {
           withCredentials: true,
         });
         const updatedPost = getRes.data.post;

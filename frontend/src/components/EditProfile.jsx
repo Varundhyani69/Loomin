@@ -10,6 +10,7 @@ import { setAuthUser, logoutUser } from '@/redux/authSlice';
 import { toast } from 'sonner';
 
 const EditProfile = () => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
     const imageRef = useRef();
     const { user } = useSelector(store => store.auth);
     const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ const EditProfile = () => {
         }
         try {
             setLoading(true);
-            const res = await axios.post('http://localhost:8080/api/v1/user/profile/edit', formData, {
+            const res = await axios.post(`${API_BASE_URL}/user/profile/edit`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true
             });
@@ -67,7 +68,7 @@ const EditProfile = () => {
 
     const handleDeleteAccount = async () => {
         try {
-            await axios.delete('http://localhost:8080/api/v1/user/delete', { withCredentials: true });
+            await axios.delete(`${API_BASE_URL}/user/delete`, { withCredentials: true });
             dispatch(logoutUser());
             navigate('/signup');
         } catch (err) {

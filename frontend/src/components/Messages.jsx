@@ -11,6 +11,7 @@ import { setSelectedPost } from '@/redux/postSlice';
 import CommentDialog from './CommentDialog';
 
 const Messages = ({ selectedUser }) => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
     const dispatch = useDispatch();
     const socket = useContext(SocketContext);
     const { messages } = useSelector((state) => state.chat);
@@ -41,7 +42,7 @@ const Messages = ({ selectedUser }) => {
 
             if (newMsg?.postId && typeof newMsg.postId === 'string') {
                 try {
-                    const res = await axios.get(`http://localhost:8080/api/v1/post/${newMsg.postId}`, {
+                    const res = await axios.get(`${API_BASE_URL}/post/${newMsg.postId}`, {
                         withCredentials: true,
                     });
                     if (res.data.success) {

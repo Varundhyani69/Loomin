@@ -1,4 +1,4 @@
-import axiosInstance from "@/utils/axios";
+import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setPosts } from "@/redux/postSlice";
@@ -9,7 +9,10 @@ const useGetAllPosts = () => {
     useEffect(() => {
         const fetchFollowingPosts = async () => {
             try {
-                const res = await axiosInstance.get("/post/following");
+                const res = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/post/following`,
+                    { withCredentials: true }
+                );
 
                 if (res.data.success && Array.isArray(res.data.posts)) {
                     dispatch(setPosts(res.data.posts));

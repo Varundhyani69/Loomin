@@ -15,6 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 
 const Profile = () => {
+
   const { id: userId } = useParams();
   const dispatch = useDispatch();
   const { userProfile, user } = useSelector((store) => store.auth);
@@ -40,7 +41,7 @@ const Profile = () => {
 
     try {
       const res = await axios.post(
-        `${API_BASE_URL}/api/v1/user/followorunfollow/${userProfile._id}`,
+        `${API_BASE_URL}/user/followorunfollow/${userProfile._id}`,
         {},
         { withCredentials: true }
       );
@@ -49,7 +50,7 @@ const Profile = () => {
       toast.success(res.data.message);
 
       const profileRes = await axios.get(
-        `${API_BASE_URL}/api/v1/user/${userProfile._id}/profile`,
+        `${API_BASE_URL}/user/${userProfile._id}/profile`,
         { withCredentials: true }
       );
 
@@ -73,7 +74,7 @@ const Profile = () => {
 
   const handlePostClick = async (post) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/v1/post/${post._id}`, {
+      const res = await axios.get(`${API_BASE_URL}/post/${post._id}`, {
         withCredentials: true
       });
       if (res.data.success) {

@@ -18,6 +18,7 @@ import { setAuthUser } from '@/redux/authSlice';
 import { Link } from 'react-router-dom';
 
 const Post = ({ post }) => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
     const { user } = useSelector(store => store.auth);
     const { posts } = useSelector(store => store.post);
     const dispatch = useDispatch();
@@ -51,7 +52,7 @@ const Post = ({ post }) => {
         if (!text.trim()) return;
         try {
             const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/comment`,
+                `${API_BASE_URL}/post/${post._id}/comment`,
                 { text },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
@@ -59,7 +60,7 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 console.log("[Comment] Added:", res.data.comment);
                 const updatedPostRes = await axios.get(
-                    `http://localhost:8080/api/v1/post/${post._id}`,
+                    `${API_BASE_URL}/post/${post._id}`,
                     { withCredentials: true }
                 );
                 const updatedPost = updatedPostRes.data.post;
@@ -77,7 +78,7 @@ const Post = ({ post }) => {
     const toggleBookmarkHandler = async () => {
         try {
             const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/bookmark`,
+                `${API_BASE_URL}/post/${post._id}/bookmark`,
                 {},
                 { withCredentials: true }
             );
@@ -87,7 +88,7 @@ const Post = ({ post }) => {
                 return toast.error(res.data.message || "Failed to update bookmark");
             }
 
-            const userRes = await axios.get("http://localhost:8080/api/v1/user/profile", {
+            const userRes = await axios.get(`${API_BASE_URL}/user/profile`, {
                 withCredentials: true
             });
 
@@ -111,7 +112,7 @@ const Post = ({ post }) => {
             console.log(`${liked ? '💔 Unliking' : '❤️ Liking'} post:`, post._id);
 
             const res = await axios.post(
-                `http://localhost:8080/api/v1/post/${post._id}/${action}`,
+                `${API_BASE_URL}/post/${post._id}/${action}`,
                 {},
                 { withCredentials: true }
             );
@@ -119,7 +120,7 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 console.log("✅ Like/Dislike updated:", res.data.message);
                 const updatedPostRes = await axios.get(
-                    `http://localhost:8080/api/v1/post/${post._id}`,
+                    `${API_BASE_URL}/post/${post._id}`,
                     { withCredentials: true }
                 );
                 const updatedPost = updatedPostRes.data.post;
@@ -138,7 +139,7 @@ const Post = ({ post }) => {
 
     const fetchFollowings = async () => {
         try {
-            const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
+            const res = await axios.get(`${API_BASE_URL}/user/followings`, {
                 withCredentials: true,
             });
             setFollowings(res.data.followings || []);
@@ -151,7 +152,7 @@ const Post = ({ post }) => {
 
     const handleSharePost = async (receiverId) => {
         try {
-            await axios.post(`http://localhost:8080/api/v1/message/send/${receiverId}`, {
+            await axios.post(`${API_BASE_URL}/message/send/${receiverId}`, {
                 message: `Check out this post!`,
                 postId: post._id,
             }, { withCredentials: true });

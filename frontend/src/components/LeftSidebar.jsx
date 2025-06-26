@@ -20,6 +20,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@radix-ui/r
 import { Input } from './ui/input';
 
 const LeftSidebar = () => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [open, setOpen] = useState(false);
@@ -32,7 +33,7 @@ const LeftSidebar = () => {
 
     const logoutHandler = async () => {
         try {
-            const res = await axios.post('http://localhost:8080/api/v1/user/logout', null, {
+            const res = await axios.post(`${API_BASE_URL}/user/logout`, null, {
                 withCredentials: true,
             });
             if (res.data.success) {
@@ -71,7 +72,7 @@ const LeftSidebar = () => {
             return;
         }
         try {
-            const res = await axios.get(`http://localhost:8080/api/v1/user/search?username=${value}`, {
+            const res = await axios.get(`${API_BASE_URL}user/search?username=${value}`, {
                 withCredentials: true,
             });
             if (res.data.success) {
