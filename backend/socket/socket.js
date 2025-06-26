@@ -12,7 +12,7 @@ const setupSocket = (app) => {
 
     io = new Server(server, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: process.env.VITE_API_URL,
             methods: ["GET", "POST"],
             credentials: true,
         },
@@ -23,14 +23,12 @@ const setupSocket = (app) => {
 
         if (userId) {
             userSocketMap[userId] = socket.id;
-            // console.log(`User connected: ${userId}, Socket: ${socket.id}`);
         }
 
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
         socket.on("disconnect", () => {
             if (userId) {
-                // console.log(`User disconnected: ${userId}, Socket: ${socket.id}`);
                 delete userSocketMap[userId];
             }
             io.emit("getOnlineUsers", Object.keys(userSocketMap));
