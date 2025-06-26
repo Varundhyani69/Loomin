@@ -24,13 +24,14 @@ const Signup = () => {
         try {
             setLoading(true);
             const res = await axios.post(
-                "http://localhost:8080/api/v1/user/register",
+                `${import.meta.env.VITE_API_URL}/api/v1/user/register`,
                 input,
                 {
                     headers: { "Content-type": "application/json" },
                     withCredentials: true
                 }
             );
+
             if (res.data.success) {
                 toast.success(res.data.message);
                 setInput({ username: "", email: "", password: "" });
