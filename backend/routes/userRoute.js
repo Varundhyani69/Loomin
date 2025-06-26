@@ -1,6 +1,6 @@
 import express from "express";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
-import { editProfile, followOrUnfollow, getProfile, getSuggestesUser, login, logout, register, deleteUser, getFollowings, searchUsers, getUserBookmarks, getMyProfile } from "../controllers/userController.js";
+import { editProfile, followOrUnfollow, getProfile, getSuggestesUser, login, logout, register, deleteUser, getFollowings, searchUsers, getUserBookmarks } from "../controllers/userController.js";
 import uploader from "../middlewares/multer.js";
 import { getNotifications } from "../controllers/notificationController.js";
 import { getMessage, sendMessage } from "../controllers/messageController.js";
