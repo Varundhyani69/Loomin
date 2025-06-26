@@ -158,7 +158,7 @@ export const editProfile = async (req, res) => {
         await user.save();
         return res.json({ success: true, message: "Profile updated", user });
     } catch (error) {
-        console.log(error);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
@@ -310,7 +310,7 @@ export const searchUsers = async (req, res) => {
 
 export const getUserBookmarks = async (req, res) => {
     try {
-        const profile = await User.findById(req.params.id)
+        const profile = await User.findById(req.user._id)
             .populate('posts')
             .populate({
                 path: 'bookmarks',

@@ -22,7 +22,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
 import { setUserProfile } from '@/redux/authSlice';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app/api/v1";
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
@@ -56,7 +56,7 @@ const CreatePost = ({ open, setOpen }) => {
 
     try {
       setLoading(true);
-      const res = await axios.post(`${API_BASE_URL}/api/v1/post/addpost`, formData, {
+      const res = await axios.post(`${API_BASE_URL}/post/addpost`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
