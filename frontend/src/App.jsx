@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/user/me`, {
+        const { data } = await axios.get("http://localhost:8080/api/v1/user/me", {
           withCredentials: true,
         });
         dispatch(setAuthUser(data.user));
@@ -45,7 +45,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    const socketio = io(import.meta.env.VITE_API_URL, {
+    const socketio = io("http://localhost:8080", {
       query: { userId: user._id },
       withCredentials: true,
       transports: ["websocket", "polling"],

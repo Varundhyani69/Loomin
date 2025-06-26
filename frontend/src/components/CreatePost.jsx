@@ -48,7 +48,7 @@ const CreatePost = ({ open, setOpen }) => {
 
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/post/addpost`, formData, {
+      const res = await axios.post('http://localhost:8080/api/v1/post/addpost', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
@@ -81,6 +81,7 @@ const CreatePost = ({ open, setOpen }) => {
         <DialogHeader className="text-center font-semibold">
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
+
         <div className="flex gap-3 items-center">
           <Avatar>
             <AvatarImage className="h-12 w-12 rounded-full" src={user?.profilePicture} />
@@ -88,6 +89,7 @@ const CreatePost = ({ open, setOpen }) => {
           </Avatar>
           <h1 className="font-semibold text-sm">{user?.username}</h1>
         </div>
+
         {imagePrev && (
           <div className="w-full h-60 overflow-hidden rounded-xl flex items-center justify-center bg-black/10">
             <img
@@ -97,6 +99,7 @@ const CreatePost = ({ open, setOpen }) => {
             />
           </div>
         )}
+
         <Input
           onChange={fileChangeHandler}
           ref={imageRef}
@@ -109,6 +112,7 @@ const CreatePost = ({ open, setOpen }) => {
           onChange={(e) => setCaption(e.target.value)}
           className="bg-[#2a2a2a] text-white border-none focus:ring-0"
         />
+
         <div className="flex justify-between gap-2">
           <Button
             onClick={() => imageRef.current.click()}
@@ -117,6 +121,7 @@ const CreatePost = ({ open, setOpen }) => {
             Select from computer
           </Button>
         </div>
+
         {imagePrev && (
           loading ? (
             <Button disabled className="w-full bg-[#333]">
@@ -124,7 +129,7 @@ const CreatePost = ({ open, setOpen }) => {
               Uploading...
             </Button>
           ) : (
-            <Button onClick={createPostHandler} className="cursor-pointer w-full bg-[#0095F6] hover:bg-[#007be6]">
+            <Button onClick={createPostHandler} className=" cursor-pointer w-full bg-[#0095F6] hover:bg-[#007be6]">
               Post
             </Button>
           )

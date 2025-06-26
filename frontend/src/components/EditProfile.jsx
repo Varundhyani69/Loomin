@@ -42,7 +42,7 @@ const EditProfile = () => {
         }
         try {
             setLoading(true);
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/user/profile/edit`, formData, {
+            const res = await axios.post('http://localhost:8080/api/v1/user/profile/edit', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 withCredentials: true
             });
@@ -67,19 +67,20 @@ const EditProfile = () => {
 
     const handleDeleteAccount = async () => {
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/user/delete`, { withCredentials: true });
+            await axios.delete('http://localhost:8080/api/v1/user/delete', { withCredentials: true });
             dispatch(logoutUser());
             navigate('/signup');
-            toast.success("Account deleted successfully");
         } catch (err) {
-            toast.error(err?.response?.data?.message || "Failed to delete account");
+            toast.error("Failed to delete account");
         }
     };
 
     return (
-        <div className="p-6 text-white bg-[#121212] min-h-screen">
+        <div className=" p-6 text-white bg-[#121212] min-h-screen">
             <section className="max-w-xl mx-auto flex flex-col gap-6">
                 <h1 className="text-2xl font-bold">Edit Profile</h1>
+
+                {/* Profile Avatar */}
                 <div className="flex justify-between items-center p-4 bg-[#1e1e1e] rounded-xl shadow-md">
                     <div className="flex gap-4 items-center">
                         <Avatar>
@@ -100,6 +101,8 @@ const EditProfile = () => {
                         </Button>
                     </div>
                 </div>
+
+                {/* Bio Input */}
                 <div>
                     <h2 className="text-lg font-semibold mb-2">Bio</h2>
                     <Textarea
@@ -108,6 +111,8 @@ const EditProfile = () => {
                         className="bg-[#1e1e1e] text-white border-none focus:ring-0"
                     />
                 </div>
+
+                {/* Gender Select */}
                 <div>
                     <h2 className="text-lg font-semibold mb-2">Gender</h2>
                     <select
@@ -121,6 +126,8 @@ const EditProfile = () => {
                         <option value="other">🧑 Other</option>
                     </select>
                 </div>
+
+                {/* Buttons */}
                 <div className="flex flex-col gap-3">
                     {loading ? (
                         <Button disabled className="bg-[#0095F6]">
@@ -140,6 +147,8 @@ const EditProfile = () => {
                     </Button>
                 </div>
             </section>
+
+            {/* Delete Confirmation Modal */}
             {showConfirm && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
                     <div className="bg-[#1e1e1e] text-white p-6 rounded-lg shadow-lg w-full max-w-sm space-y-4">

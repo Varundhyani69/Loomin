@@ -11,9 +11,6 @@ import { setupSocket } from "./socket/socket.js";
 
 dotenv.config();
 
-const app = express();
-const port = process.env.PORT || 8080;
-
 // Validate environment variables
 if (!process.env.PORT || !process.env.MONGO_URI) {
     console.error("Error: Missing required environment variables (PORT or MONGO_URI)");
@@ -26,7 +23,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-
+const app = express();
+const port = process.env.PORT || 8080;
 
 // Middlewares
 app.use(express.json());
@@ -34,9 +32,9 @@ app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: process.env.VITE_API_URL,
+        origin: true,
         credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
     })
 );
 

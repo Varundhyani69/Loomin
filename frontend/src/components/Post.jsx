@@ -24,34 +24,34 @@ const Post = ({ post }) => {
 
     const [text, setText] = useState('');
     const [open, setOpen] = useState(false);
-    const [postLike, setPostLike] = useState(post?.likes?.length || 0);
-    const [liked, setLiked] = useState(user && post?.likes?.includes(user._id) || false);
+    const [postLike, setPostLike] = useState(post.likes.length);
+    const [liked, setLiked] = useState(post.likes.includes(user?._id));
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
     const [followings, setFollowings] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredFollowings = followings.filter((f) =>
-        f?.username?.toLowerCase().includes(searchQuery.toLowerCase())
+        f.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     useEffect(() => {
-        if (user && Array.isArray(user.bookmarks) && post?._id) {
+        if (user && Array.isArray(user.bookmarks)) {
             setIsBookmarked(user.bookmarks.includes(post._id));
         } else {
             setIsBookmarked(false);
         }
-    }, [user, post?._id]);
+    }, [user, post._id]);
 
     const changeEventHandler = (e) => {
         setText(e.target.value);
     };
 
     const commentHandler = async () => {
-        if (!text.trim() || !post?._id) return;
+        if (!text.trim()) return;
         try {
             const res = await axios.post(
-                `${import.meta.env.VITE_API_URL}/post/${post._id}/comment`,
+                `http://localhost:8080/api/v1/post/${post._id}/comment`,
                 { text },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
@@ -59,7 +59,7 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 console.log("[Comment] Added:", res.data.comment);
                 const updatedPostRes = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/post/${post._id}`,
+                    `http://localhost:8080/api/v1/post/${post._id}`,
                     { withCredentials: true }
                 );
                 const updatedPost = updatedPostRes.data.post;
@@ -70,15 +70,14 @@ const Post = ({ post }) => {
             }
         } catch (err) {
             console.error("[Comment] Failed:", err);
-            toast.error(err?.response?.data?.message || "Failed to comment");
+            toast.error("Failed to comment");
         }
     };
 
     const toggleBookmarkHandler = async () => {
-        if (!post?._id || !user) return;
         try {
             const res = await axios.post(
-                `${import.meta.env.VITE_API_URL}/post/${post._id}/bookmark`,
+                `http://localhost:8080/api/v1/post/${post._id}/bookmark`,
                 {},
                 { withCredentials: true }
             );
@@ -88,7 +87,7 @@ const Post = ({ post }) => {
                 return toast.error(res.data.message || "Failed to update bookmark");
             }
 
-            const userRes = await axios.get(`${import.meta.env.VITE_API_URL}/user/profile`, {
+            const userRes = await axios.get("http://localhost:8080/api/v1/user/profile", {
                 withCredentials: true
             });
 
@@ -102,18 +101,17 @@ const Post = ({ post }) => {
             toast.success(res.data.message);
         } catch (err) {
             console.error("[Bookmark] Failed:", err);
-            toast.error(err?.response?.data?.message || "Bookmark failed");
+            toast.error("Bookmark failed");
         }
     };
 
     const likeDislikeHandler = async () => {
-        if (!post?._id || !user) return;
         try {
             const action = liked ? 'dislike' : 'like';
             console.log(`${liked ? '💔 Unliking' : '❤️ Liking'} post:`, post._id);
 
             const res = await axios.post(
-                `${import.meta.env.VITE_API_URL}/post/${post._id}/${action}`,
+                `http://localhost:8080/api/v1/post/${post._id}/${action}`,
                 {},
                 { withCredentials: true }
             );
@@ -121,7 +119,7 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 console.log("✅ Like/Dislike updated:", res.data.message);
                 const updatedPostRes = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/post/${post._id}`,
+                    `http://localhost:8080/api/v1/post/${post._id}`,
                     { withCredentials: true }
                 );
                 const updatedPost = updatedPostRes.data.post;
@@ -134,28 +132,26 @@ const Post = ({ post }) => {
             }
         } catch (error) {
             console.error("❌ Like/Dislike failed:", error);
-            toast.error(error?.response?.data?.message || "Failed to update like/dislike");
+            toast.error("Failed to update like/dislike");
         }
     };
 
     const fetchFollowings = async () => {
-        if (!user) return;
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/user/followings`, {
+            const res = await axios.get("http://localhost:8080/api/v1/user/followings", {
                 withCredentials: true,
             });
             setFollowings(res.data.followings || []);
             console.log("[Share] Loaded followings:", res.data.followings);
         } catch (error) {
-            toast.error(error?.response?.data?.message || "Failed to load followings");
+            toast.error("Failed to load followings");
             console.error("[Share] Error loading followings:", error);
         }
     };
 
     const handleSharePost = async (receiverId) => {
-        if (!post?._id || !receiverId) return;
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/message/send/${receiverId}`, {
+            await axios.post(`http://localhost:8080/api/v1/message/send/${receiverId}`, {
                 message: `Check out this post!`,
                 postId: post._id,
             }, { withCredentials: true });
@@ -164,7 +160,7 @@ const Post = ({ post }) => {
             setShareOpen(false);
         } catch (err) {
             console.error("[Share] Failed to send post:", err);
-            toast.error(err?.response?.data?.message || "Failed to share");
+            toast.error("Failed to share");
         }
     };
 
@@ -172,25 +168,24 @@ const Post = ({ post }) => {
         if (shareOpen) fetchFollowings();
     }, [shareOpen]);
 
-    if (!post || !post.author) {
-        return null; // Skip rendering if post or author is undefined
-    }
-
     return (
         <div className='my-8 w-full max-w-md mx-auto rounded-2xl bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] p-4'>
+            {/* top bar */}
             <div className='flex items-center justify-between'>
                 <div className="flex items-center gap-2">
                     <Avatar>
                         <Link to={`/profile/${post.author._id}`}>
                             <AvatarImage className='h-10 w-10 rounded-full' src={post.author.profilePicture} alt='Post_Image' />
-                            <AvatarFallback>{post.author.username?.[0] || 'U'}</AvatarFallback>
+                            <AvatarFallback>{post.author.username[0]}</AvatarFallback>
                         </Link>
                     </Avatar>
                     <Link to={`/profile/${post.author._id}`}>
-                        <h1>{post.author.username || 'Unknown'}</h1>
+                        <h1>{post.author.username}</h1>
                     </Link>
                 </div>
             </div>
+
+            {/* post image */}
             <img
                 onClick={() => {
                     dispatch(setSelectedPost(post));
@@ -200,6 +195,8 @@ const Post = ({ post }) => {
                 src={post.image}
                 alt="post_image"
             />
+
+            {/* post actions */}
             <div className="flex items-center justify-between">
                 <div className='flex items-center gap-3'>
                     {liked ? (
@@ -214,6 +211,7 @@ const Post = ({ post }) => {
                         }}
                         className='cursor-pointer hover:text-gray-400'
                     />
+                    {/* Share Post */}
                     <Dialog open={shareOpen} onOpenChange={setShareOpen}>
                         <DialogTrigger asChild>
                             <Send className='cursor-pointer hover:text-gray-400' />
@@ -221,6 +219,7 @@ const Post = ({ post }) => {
                         <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
                         <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-lg bg-[#1e1e1e] p-6 shadow-xl focus:outline-none z-50">
                             <h2 className="text-xl font-semibold text-white mb-4">Share Post</h2>
+
                             <input
                                 type="text"
                                 placeholder="Search by username..."
@@ -228,6 +227,7 @@ const Post = ({ post }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+
                             {filteredFollowings.length === 0 ? (
                                 <p className="text-gray-400">No users found</p>
                             ) : (
@@ -237,9 +237,9 @@ const Post = ({ post }) => {
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
                                                     <AvatarImage className='h-12 w-12' src={user.profilePicture} />
-                                                    <AvatarFallback>{user.username?.[0] || 'U'}</AvatarFallback>
+                                                    <AvatarFallback>{user.username[0]}</AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-white">{user.username || 'Unknown'}</span>
+                                                <span className="text-white">{user.username}</span>
                                             </div>
                                             <Button className='cursor-pointer' size="sm" onClick={() => handleSharePost(user._id)}>
                                                 Send
@@ -256,14 +256,16 @@ const Post = ({ post }) => {
                     className={`cursor-pointer hover:text-gray-600 ${isBookmarked ? 'fill-white text-white' : 'text-gray-400'}`}
                 />
             </div>
+
             <span className='font-medium block mb-2 text-white'>{postLike} likes</span>
             <p className='text-white'>
                 <Link to={`/profile/${post.author._id}`}>
-                    <span className='font-medium mr-2'>{post.author.username || 'Unknown'}</span>
+                    <span className='font-medium mr-2'>{post.author.username}</span>
                 </Link>
                 {post.caption}
             </p>
-            {post.comments?.length > 0 ? (
+
+            {post.comments.length > 0 ? (
                 <span className='cursor-pointer text-sm text-gray-400' onClick={() => {
                     dispatch(setSelectedPost(post));
                     setOpen(true);
@@ -274,7 +276,10 @@ const Post = ({ post }) => {
                     setOpen(true);
                 }}>Be first to comment</span>
             )}
+
             <CommentDialog open={open} setOpen={setOpen} />
+
+            {/* Add Comment */}
             <div className='flex items-center justify-between mt-2'>
                 <input
                     type="text"

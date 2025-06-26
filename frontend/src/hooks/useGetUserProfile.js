@@ -11,7 +11,7 @@ const useGetUserProfile = (userId, refreshFlag) => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/user/${userId}/profile`, {
+                const res = await axios.get(`http://localhost:8080/api/v1/user/${userId}/profile`, {
                     withCredentials: true,
                 });
                 if (res.data.success) {
@@ -22,7 +22,7 @@ const useGetUserProfile = (userId, refreshFlag) => {
             } catch (error) {
                 console.error("Error fetching user profile:", error);
                 if (error.response?.status === 401 || error.response?.status === 403) {
-                    navigate('/login');
+                    navigate('/login'); // 🔐 redirect if not authenticated
                 }
                 dispatch(setUserProfile(null));
             }
@@ -30,6 +30,7 @@ const useGetUserProfile = (userId, refreshFlag) => {
 
         if (userId) fetchUserProfile();
 
+        // ✅ Listen for bookmark or post refresh triggers
         const handleProfileRefresh = () => {
             if (userId) fetchUserProfile();
         };

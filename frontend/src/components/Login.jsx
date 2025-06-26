@@ -19,7 +19,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
+  const redirectPath =
+    new URLSearchParams(location.search).get("redirect") || "/";
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -29,10 +30,14 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/user/login`, input, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        "http://localhost:8080/api/v1/user/login",
+        input,
+        {
+          headers: { "Content-type": "application/json" },
+          withCredentials: true,
+        }
+      );
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
@@ -53,6 +58,7 @@ const Login = () => {
         className="w-full max-w-md bg-[#1e1e1e] shadow-[0_4px_20px_rgba(0,0,0,0.6)] rounded-xl p-8 space-y-6"
       >
         <h1 className="text-2xl font-bold text-center">Welcome Back</h1>
+
         <div>
           <label className="block text-sm font-medium mb-1">Email</label>
           <Input
@@ -64,6 +70,7 @@ const Login = () => {
             required
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">Password</label>
           <Input
@@ -75,6 +82,7 @@ const Login = () => {
             required
           />
         </div>
+
         {loading ? (
           <Button disabled className="w-full bg-[#333]">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -85,6 +93,7 @@ const Login = () => {
             Login
           </Button>
         )}
+
         <p className="text-center text-sm text-gray-400">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-blue-500 hover:underline">

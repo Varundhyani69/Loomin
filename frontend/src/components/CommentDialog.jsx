@@ -1,3 +1,4 @@
+// ✅ CommentDialog.jsx (Modern UI with logs)
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Dialog, DialogContent, DialogOverlay } from "@radix-ui/react-dialog";
 import { MoreHorizontal, Trash2, Pencil } from "lucide-react";
@@ -29,7 +30,7 @@ const CommentDialog = ({ open, setOpen }) => {
     try {
       console.log("💬 [Add Comment] Sending:", text);
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/post/${selectedPost._id}/comment`,
+        `http://localhost:8080/api/v1/post/${selectedPost._id}/comment`,
         { text },
         { withCredentials: true }
       );
@@ -37,7 +38,7 @@ const CommentDialog = ({ open, setOpen }) => {
       if (res.data.success) {
         console.log("✅ [Add Comment] Added:", res.data.comment);
 
-        const getUpdatedPost = await axios.get(`${import.meta.env.VITE_API_URL}/post/${selectedPost._id}`, {
+        const getUpdatedPost = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, {
           withCredentials: true,
         });
         const updatedPost = getUpdatedPost.data.post;
@@ -52,7 +53,7 @@ const CommentDialog = ({ open, setOpen }) => {
       }
     } catch (err) {
       console.error("❌ [Add Comment] Failed:", err);
-      toast.error(err?.response?.data?.message || "Failed to post comment");
+      toast.error("Failed to post comment");
     }
   };
 
@@ -60,7 +61,7 @@ const CommentDialog = ({ open, setOpen }) => {
     try {
       console.log("🗑️ [Delete Post] ID:", selectedPost._id);
       const res = await axios.delete(
-        `${import.meta.env.VITE_API_URL}/post/delete/${selectedPost._id}`,
+        `http://localhost:8080/api/v1/post/delete/${selectedPost._id}`,
         { withCredentials: true }
       );
 
@@ -78,7 +79,7 @@ const CommentDialog = ({ open, setOpen }) => {
       }
     } catch (err) {
       console.error("❌ [Delete Post] Failed:", err);
-      toast.error(err?.response?.data?.message || "Delete failed");
+      toast.error("Delete failed");
     }
   };
 
@@ -86,13 +87,13 @@ const CommentDialog = ({ open, setOpen }) => {
     try {
       console.log("✏️ [Edit Caption] New:", editedCaption);
       const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/post/${selectedPost._id}/edit-caption`,
+        `http://localhost:8080/api/v1/post/${selectedPost._id}/edit-caption`,
         { caption: editedCaption },
         { withCredentials: true }
       );
 
       if (res.data.success) {
-        const getRes = await axios.get(`${import.meta.env.VITE_API_URL}/post/${selectedPost._id}`, {
+        const getRes = await axios.get(`http://localhost:8080/api/v1/post/${selectedPost._id}`, {
           withCredentials: true,
         });
         const updatedPost = getRes.data.post;
@@ -115,7 +116,7 @@ const CommentDialog = ({ open, setOpen }) => {
       }
     } catch (err) {
       console.error("❌ [Edit Caption] Failed:", err);
-      toast.error(err?.response?.data?.message || "Update failed");
+      toast.error("Update failed");
     }
   };
 
@@ -131,7 +132,9 @@ const CommentDialog = ({ open, setOpen }) => {
               alt="post_img"
             />
           </div>
+
           <div className="w-1/2 flex flex-col">
+            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <div className="flex gap-3 items-center">
                 <Avatar>
@@ -140,6 +143,7 @@ const CommentDialog = ({ open, setOpen }) => {
                 </Avatar>
                 <span className="font-medium text-sm">{selectedPost?.author?.username}</span>
               </div>
+
               {isPostAuthor() && (
                 <div className="relative group">
                   <MoreHorizontal className="cursor-pointer" />
@@ -152,7 +156,7 @@ const CommentDialog = ({ open, setOpen }) => {
                         setEditedCaption(selectedPost.caption || "");
                       }}
                     >
-                      <Pencil size={16} className="mr-2 hover:text-black" /> Edit Caption
+                      <Pencil size={16} className="mr-2 hover:text-black " /> Edit Caption
                     </Button>
                     <Button
                       variant="ghost"
@@ -165,6 +169,8 @@ const CommentDialog = ({ open, setOpen }) => {
                 </div>
               )}
             </div>
+
+            {/* Caption */}
             <div className="px-4 py-2 border-b border-gray-700">
               {isEditing ? (
                 <div className="flex gap-2">
@@ -182,11 +188,15 @@ const CommentDialog = ({ open, setOpen }) => {
                 <p className="text-sm text-gray-300">{selectedPost?.caption}</p>
               )}
             </div>
+
+            {/* Comments */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {selectedPost?.comments?.map((comment) => (
                 <Comment key={comment._id} comment={comment} />
               ))}
             </div>
+
+            {/* Add Comment */}
             <div className="p-4 border-t border-gray-700">
               <div className="flex gap-2 items-center">
                 <input
