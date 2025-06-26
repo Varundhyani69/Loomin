@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/utils/axios"; // using centralized axios instance
 import { toast } from "sonner";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -30,14 +30,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post(
-        "http://localhost:8080/api/v1/user/login",
-        input,
-        {
-          headers: { "Content-type": "application/json" },
-          withCredentials: true,
-        }
-      );
+      const res = await axiosInstance.post("/user/login", input);
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
