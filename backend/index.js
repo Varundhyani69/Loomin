@@ -32,7 +32,7 @@ app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: true,
+        origin: "https://loomin-production.up.railway.app/api/v1",
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
     })

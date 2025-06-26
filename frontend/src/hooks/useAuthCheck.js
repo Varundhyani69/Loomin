@@ -1,8 +1,8 @@
 // hooks/useAuthCheck.js
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/utils/axios";
 import { useDispatch } from "react-redux";
-import { setUser } from "../redux/authSlice";
+import { setUser } from "@/redux/authSlice";
 
 export default function useAuthCheck() {
     const [checking, setChecking] = useState(true);
@@ -11,9 +11,7 @@ export default function useAuthCheck() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/v1/user/me", {
-                    withCredentials: true,
-                });
+                const res = await axiosInstance.get("/user/me");
                 dispatch(setUser(res.data.user));
             } catch (err) {
                 console.log("Not logged in");

@@ -20,7 +20,8 @@ const isAuthenticated = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Auth Middleware Error:", error);
-        res.status(500).json({ success: false, message: "Authentication failed" });
+        res.status(401).json({ success: false, message: "Authentication failed" });
+
     }
 };
 
