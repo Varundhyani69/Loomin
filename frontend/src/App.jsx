@@ -8,34 +8,35 @@ import EditProfile from "./components/EditProfile.jsx";
 import ChatPage from "./components/ChatPage";
 import Notification from "./components/Notification";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setOnlineUsers, setHasNewMessage, appendMessage } from "./redux/chatSlice";
 import { addNotification, setHasNewNotification } from "./redux/notificationSlice";
+import { setAuthUser } from "./redux/authSlice";
+
 import SocketContext from "./context/SocketContext";
 import { toast } from "sonner";
-import axios from "axios";
-import { setAuthUser } from "./redux/authSlice";
+
+import axiosInstance from "@/utils/axios"; // ✅ updated import
 
 function App() {
   const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
-  const [loading, setLoading] = useState(true); // 🔁 new
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Auto-login using cookies
+  // ✅ Auto-login using axiosInstance
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await axios.get("http://localhost:8080/api/v1/user/me", {
-          withCredentials: true,
-        });
+        const { data } = await axiosInstance.get("/user/me");
         dispatch(setAuthUser(data.user));
       } catch (err) {
         console.log("User not authenticated");
       } finally {
-        setLoading(false); // 🔁 only stop loading when done
+        setLoading(false);
       }
     };
     fetchUser();
@@ -45,7 +46,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    const socketio = io("http://localhost:8080", {
+    const socketio = io(import.meta.env.VITE_SOCKET_URL || "https://loomin-backend-production.up.railway.app", {
       query: { userId: user._id },
       withCredentials: true,
       transports: ["websocket", "polling"],
@@ -69,10 +70,7 @@ function App() {
     });
 
     socketio.on("newMessage", (msg) => {
-      if (
-        !selectedUser ||
-        (msg.senderId !== selectedUser._id && msg.receiverId !== selectedUser._id)
-      ) {
+      if (!selectedUser || (msg.senderId !== selectedUser._id && msg.receiverId !== selectedUser._id)) {
         dispatch(setHasNewMessage(true));
       }
       dispatch(appendMessage(msg));
@@ -115,7 +113,6 @@ function App() {
     { path: "/signup", element: <Signup /> },
   ]);
 
-  // 🔁 Show loading screen while checking cookies
   if (loading) return <div className="text-center p-10">Loading...</div>;
 
   return (

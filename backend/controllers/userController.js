@@ -247,7 +247,9 @@ export const deleteUser = async (req, res) => {
 
         // Delete all posts by the user
         await Post.deleteMany({ author: userId });
-
+        // Remove user from others' followers/following
+        await User.updateMany({ followers: userId }, { $pull: { followers: userId } });
+        await User.updateMany({ following: userId }, { $pull: { following: userId } });
         // Delete user itself
         await User.findByIdAndDelete(userId);
 
@@ -310,17 +312,23 @@ export const getUserBookmarks = async (req, res) => {
     try {
         const profile = await User.findById(req.params.id)
             .populate('posts')
-            .populate('bookmarks')  // ✅ important
+            .populate({
+                path: 'bookmarks',
+                model: 'Post',
+                populate: { path: 'author', model: 'User' }
+            })
             .populate('followers')
             .populate('following');
 
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
+        if (!profile) return res.status(404).json({ success: false, message: "User not found" });
 
-        res.status(200).json({ success: true, bookmarks: user.bookmarks });
+        res.status(200).json({ success: true, bookmarks: profile.bookmarks });
     } catch (err) {
+        console.error("getUserBookmarks error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
 
 export const getMyProfile = async (req, res) => {
     try {
