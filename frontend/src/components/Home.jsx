@@ -9,7 +9,7 @@ const Home = () => {
   const { user } = useSelector((store) => store.auth);
 
   useGetSuggestedUsers();
-  if (user) useGetAllPosts();
+  useGetAllPosts();
 
   return (
     <div className="flex flex-col md:flex-row bg-[#121212] min-h-screen">
