@@ -16,6 +16,12 @@ if (!process.env.PORT || !process.env.MONGO_URI) {
     console.error("Error: Missing required environment variables (PORT or MONGO_URI)");
     process.exit(1);
 }
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -26,11 +32,12 @@ app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: ["http://localhost:5173", "http://localhost:5174"], // Support multiple frontend ports
+        origin: true,
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
     })
 );
+
 app.use("/uploads", express.static("uploads"));
 
 // API Routes
@@ -38,7 +45,12 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/message", messageRoute);
 
+// Serve static files from Vite build
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
 
 // Global error-handling middleware
 app.use((err, req, res, next) => {
