@@ -11,6 +11,9 @@ import { setUserProfile } from '@/redux/authSlice';
 import CommentDialog from './CommentDialog';
 import { setSelectedPost } from '@/redux/postSlice';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+
 const Profile = () => {
   const { id: userId } = useParams();
   const dispatch = useDispatch();
@@ -37,7 +40,7 @@ const Profile = () => {
 
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/v1/user/followorunfollow/${userProfile._id}`,
+        `${API_BASE_URL}/api/v1/user/followorunfollow/${userProfile._id}`,
         {},
         { withCredentials: true }
       );
@@ -46,7 +49,7 @@ const Profile = () => {
       toast.success(res.data.message);
 
       const profileRes = await axios.get(
-        `http://localhost:8080/api/v1/user/${userProfile._id}/profile`,
+        `${API_BASE_URL}/api/v1/user/${userProfile._id}/profile`,
         { withCredentials: true }
       );
 
@@ -70,7 +73,7 @@ const Profile = () => {
 
   const handlePostClick = async (post) => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/v1/post/${post._id}`, {
+      const res = await axios.get(`${API_BASE_URL}/api/v1/post/${post._id}`, {
         withCredentials: true
       });
       if (res.data.success) {
@@ -101,7 +104,6 @@ const Profile = () => {
   return (
     <div className='flex max-w-5xl mx-auto justify-center pl-10'>
       <div className="flex flex-col gap-12 p-8">
-
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-10">
           <section className='flex items-center justify-center'>
