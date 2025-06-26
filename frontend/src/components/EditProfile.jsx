@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import axiosInstance from '@/utils/axios';
+import axios from 'axios';
 import { Loader } from 'lucide-react';
 import { setAuthUser, logoutUser } from '@/redux/authSlice';
 import { toast } from 'sonner';
@@ -42,8 +42,9 @@ const EditProfile = () => {
         }
         try {
             setLoading(true);
-            const res = await axiosInstance.post('/user/profile/edit', formData, {
+            const res = await axios.post('http://localhost:8080/api/v1/user/profile/edit', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                withCredentials: true
             });
 
             if (res.data.success) {
@@ -51,7 +52,7 @@ const EditProfile = () => {
                     ...user,
                     bio: res.data.user?.bio,
                     profilePicture: res.data.user?.profilePicture,
-                    gender: res.data.user?.gender,
+                    gender: res.data.user?.gender
                 };
                 dispatch(setAuthUser(updatedUser));
                 navigate(`/profile/${user._id}`);
@@ -66,14 +67,13 @@ const EditProfile = () => {
 
     const handleDeleteAccount = async () => {
         try {
-            await axiosInstance.delete('/user/delete');
+            await axios.delete('http://localhost:8080/api/v1/user/delete', { withCredentials: true });
             dispatch(logoutUser());
             navigate('/signup');
         } catch (err) {
             toast.error("Failed to delete account");
         }
     };
-
 
     return (
         <div className=" p-6 text-white bg-[#121212] min-h-screen">

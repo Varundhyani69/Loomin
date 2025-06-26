@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Heart, MessageCircle, Share2 } from 'lucide-react';
-import axios from '@/utils/axios';
+import axios from 'axios';
 import { toast } from 'sonner';
 import { setUserProfile } from '@/redux/authSlice';
 import CommentDialog from './CommentDialog';
@@ -36,11 +36,18 @@ const Profile = () => {
     if (!user) return toast.error("Please log in to follow/unfollow");
 
     try {
-      const res = await axios.post(`/user/followorunfollow/${userProfile._id}`);
+      const res = await axios.post(
+        `http://localhost:8080/api/v1/user/followorunfollow/${userProfile._id}`,
+        {},
+        { withCredentials: true }
+      );
       if (!res.data.success) return toast.error(res.data.message);
       toast.success(res.data.message);
 
-      const profileRes = await axios.get(`/user/${userProfile._id}/profile`);
+      const profileRes = await axios.get(
+        `http://localhost:8080/api/v1/user/${userProfile._id}/profile`,
+        { withCredentials: true }
+      );
 
       const data = profileRes.data.user ?? profileRes.data.profile;
       if (!data) return toast.error("Could not fetch updated profile");
@@ -63,7 +70,9 @@ const Profile = () => {
 
   const handlePostClick = async (post) => {
     try {
-      const res = await axios.get(`/post/${post._id}`);
+      const res = await axios.get(`http://localhost:8080/api/v1/post/${post._id}`, {
+        withCredentials: true
+      });
       if (res.data.success) {
         dispatch(setSelectedPost(res.data.post));
         setOpen(true);

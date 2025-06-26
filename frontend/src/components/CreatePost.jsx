@@ -17,7 +17,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import axiosInstance from '@/utils/axios';
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
 import { setUserProfile } from '@/redux/authSlice';
@@ -48,31 +48,31 @@ const CreatePost = ({ open, setOpen }) => {
 
     try {
       setLoading(true);
-      const { data } = await axiosInstance.post('/post/addpost', formData, {
+      const res = await axios.post('http://localhost:8080/api/v1/post/addpost', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
       });
 
-      if (data.success) {
-        const newPost = data.post;
+      if (res.data.success) {
+        const newPost = res.data.post;
         dispatch(setPosts([newPost, ...posts]));
         dispatch(setUserProfile({
           ...userProfile,
           posts: [newPost, ...userProfile.posts],
         }));
-        window.dispatchEvent(new Event("postCreated"));
-        toast.success(data.message);
+        window.dispatchEvent(new Event('postCreated'));
+        toast.success(res.data.message);
         setOpen(false);
-        setCaption("");
-        setFile("");
-        setImagePrev("");
+        setCaption('');
+        setFile('');
+        setImagePrev('');
       }
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Something went wrong");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

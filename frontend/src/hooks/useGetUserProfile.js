@@ -1,5 +1,5 @@
-import axiosInstance from "@/utils/axios";
-import { useEffect } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setUserProfile } from "@/redux/authSlice";
 import { useNavigate } from "react-router-dom";
@@ -11,10 +11,9 @@ const useGetUserProfile = (userId, refreshFlag) => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const res = await axiosInstance.get(`/user/${userId}/profile`, {
+                const res = await axios.get(`http://localhost:8080/api/v1/user/${userId}/profile`, {
                     withCredentials: true,
                 });
-
                 if (res.data.success) {
                     dispatch(setUserProfile(res.data.user));
                 } else {
@@ -23,7 +22,7 @@ const useGetUserProfile = (userId, refreshFlag) => {
             } catch (error) {
                 console.error("Error fetching user profile:", error);
                 if (error.response?.status === 401 || error.response?.status === 403) {
-                    navigate("/login"); // Redirect if unauthorized
+                    navigate('/login'); // 🔐 redirect if not authenticated
                 }
                 dispatch(setUserProfile(null));
             }
@@ -31,15 +30,15 @@ const useGetUserProfile = (userId, refreshFlag) => {
 
         if (userId) fetchUserProfile();
 
-        // Listen for profile refresh events
+        // ✅ Listen for bookmark or post refresh triggers
         const handleProfileRefresh = () => {
             if (userId) fetchUserProfile();
         };
 
-        window.addEventListener("refreshProfile", handleProfileRefresh);
+        window.addEventListener('refreshProfile', handleProfileRefresh);
 
         return () => {
-            window.removeEventListener("refreshProfile", handleProfileRefresh);
+            window.removeEventListener('refreshProfile', handleProfileRefresh);
         };
     }, [userId, refreshFlag, dispatch, navigate]);
 };

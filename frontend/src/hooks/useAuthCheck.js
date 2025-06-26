@@ -1,6 +1,6 @@
 // hooks/useAuthCheck.js
 import { useEffect, useState } from "react";
-import axiosInstance from "../utils/axios"; // Use your custom axios instance with baseURL set
+import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/authSlice";
 
@@ -11,7 +11,7 @@ export default function useAuthCheck() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await axiosInstance.get("/user/me", {
+                const res = await axios.get("http://localhost:8080/api/v1/user/me", {
                     withCredentials: true,
                 });
                 dispatch(setUser(res.data.user));
