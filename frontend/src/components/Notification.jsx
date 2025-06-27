@@ -1,25 +1,14 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import axios from 'axios';
 import { setHasNewNotification } from '@/redux/notificationSlice';
 
 const Notification = () => {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
-    const notifications = useSelector((state) => state.notification.notifications);
     const dispatch = useDispatch();
+    const notifications = useSelector((state) => state.notification.notifications);
 
     useEffect(() => {
-        const markSeen = async () => {
-            try {
-                await axios.post(`${API_BASE_URL}/notification/mark-seen`, {}, { withCredentials: true });
-                dispatch(setHasNewNotification(false)); // ✅ reset red dot
-            } catch (error) {
-                console.error("Error marking notifications as seen:", error);
-            }
-        };
-
-        markSeen();
+        dispatch(setHasNewNotification(false));
     }, [dispatch]);
 
     return (
