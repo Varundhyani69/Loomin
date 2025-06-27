@@ -12,7 +12,7 @@ const RightSidebar = () => {
   if (!user) return null;
 
   return (
-    <aside className="w-full max-w-xs px-4 py-8 text-white">
+    <aside className="w-full max-w-xs px-8 py-8 text-white">
       {/* User Profile Preview */}
       <div className="flex items-center gap-4 mb-6">
         <Link to={`/profile/${user._id}`}>

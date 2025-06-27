@@ -8,7 +8,7 @@ import {
     Bell
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
@@ -124,7 +124,10 @@ const LeftSidebar = () => {
     return (
         <>
             <div className="hidden md:flex fixed top-0 left-0 z-10 h-screen w-72 flex-col bg-[#1e1e1e] text-white border-r border-gray-800 shadow-[4px_0_10px_rgba(0,0,0,0.4)] px-4">
-                <h1 className="my-8 text-xl font-bold">Logo</h1>
+                <Link to="/" >
+                    <img className="h-25 w-35" src="/NoBg.png" alt="logo" />
+                </Link>
+
                 <div className="space-y-3">
                     {SidebarItems.map((item, index) => (
                         <div

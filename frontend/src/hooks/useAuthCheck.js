@@ -1,12 +1,28 @@
-import { useEffect, useState } from "react";
+// src/hooks/useAuthCheck.js
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import axios from '@/utils/axios';
+import { setNotifications, setHasNewNotification } from '@/redux/notificationSlice';
 
-export default function useAuthCheck() {
-    const [checking, setChecking] = useState(true);
+const useAuthCheck = () => {
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        // Optionally, perform a different auth check or just skip
-        setChecking(false);
-    }, []);
+        const loadNotifications = async () => {
+            try {
+                const res = await axios.get('/user/notifications', { withCredentials: true });
+                if (res.data.success) {
+                    dispatch(setNotifications(res.data.notifications));
+                    // Check if there are any unseen notifications (add logic if needed)
+                    dispatch(setHasNewNotification(false)); // 👈 set to false since we are now synced
+                }
+            } catch (err) {
+                console.error("Failed to fetch notifications", err);
+            }
+        };
 
-    return checking;
-}
+        loadNotifications();
+    }, [dispatch]);
+};
+
+export default useAuthCheck;

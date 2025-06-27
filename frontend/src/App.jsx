@@ -14,11 +14,12 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setOnlineUsers, setHasNewMessage, appendMessage } from "./redux/chatSlice";
 import { addNotification, setHasNewNotification } from "./redux/notificationSlice";
-
+import useAuthCheck from './hooks/useAuthCheck';
 import SocketContext from "./context/SocketContext";
 import { toast } from "sonner";
 
 function App() {
+  useAuthCheck();
   const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);

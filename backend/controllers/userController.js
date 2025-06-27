@@ -251,28 +251,64 @@ export const deleteUser = async (req, res) => {
     try {
         const userId = req.id;
 
-        // Delete all posts by the user
-        await Post.deleteMany({ author: userId });
-        // Remove user from others' followers/following
-        await User.updateMany({ followers: userId }, { $pull: { followers: userId } });
-        await User.updateMany({ following: userId }, { $pull: { following: userId } });
-        // Delete user itself
-        await User.findByIdAndDelete(userId);
+        // 1. Find user's posts
+        const userPosts = await Post.find({ author: userId });
+        const postIds = userPosts.map(p => p._id);
 
-        // Delete notifications sent or received by user
+        // 2. Delete all comments made by the user
+        await Comment.deleteMany({ author: userId });
+
+        // 3. Delete all comments on the user's posts
+        await Comment.deleteMany({ post: { $in: postIds } });
+
+        // 4. Delete all posts made by the user
+        await Post.deleteMany({ author: userId });
+
+        // 5. Remove likes by the user from all posts
+        await Post.updateMany(
+            { likes: userId },
+            { $pull: { likes: userId } }
+        );
+
+        // 6. Remove the user's posts from other users' bookmarks
+        await User.updateMany(
+            { bookmarks: { $in: postIds } },
+            { $pull: { bookmarks: { $in: postIds } } }
+        );
+
+        // 7. Remove this user from all followers and followings
+        await User.updateMany(
+            { followers: userId },
+            { $pull: { followers: userId } }
+        );
+        await User.updateMany(
+            { following: userId },
+            { $pull: { following: userId } }
+        );
+
+        // 8. Delete all messages sent or received by user
+        await Message.deleteMany({
+            $or: [{ sender: userId }, { receiver: userId }]
+        });
+
+        // 9. Delete all notifications involving the user
         await Notification.deleteMany({
             $or: [{ sender: userId }, { receiver: userId }]
         });
 
+        // 10. Finally delete the user
+        await User.findByIdAndDelete(userId);
+
+        // 11. Clear token
         res.clearCookie('token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
         });
 
-        return res.json({ success: true, message: "Account deleted successfully" });
+        return res.json({ success: true, message: "Account and related data deleted successfully" });
     } catch (error) {
-        console.log(error);
+        console.error("❌ Failed to delete user completely:", error);
         res.status(500).json({ success: false, message: "Failed to delete account" });
     }
 };
@@ -292,8 +328,6 @@ export const getFollowings = async (req, res) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
-
-
 
 // Search users by username
 export const searchUsers = async (req, res) => {
