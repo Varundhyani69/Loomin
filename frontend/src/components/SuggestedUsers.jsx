@@ -43,11 +43,6 @@ const SuggestedUsers = () => {
                                     </p>
                                 </div>
                             </div>
-
-                            {/* Follow Action */}
-                            <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition duration-200">
-                                Follow
-                            </button>
                         </div>
                     ))}
                 </div>

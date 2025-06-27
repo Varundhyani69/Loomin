@@ -37,18 +37,6 @@ const RightSidebar = () => {
         </div>
       </div>
 
-      {/* Notification Icon */}
-      <div className="mb-6">
-        <Link to="/notifications" className="flex items-center gap-2 hover:underline">
-          <div className="relative">
-            <Bell className="text-white" size={22} />
-            {hasNewNotification && (
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-600 animate-ping" />
-            )}
-          </div>
-          <span className="text-sm">Notifications</span>
-        </Link>
-      </div>
 
       {/* Suggested Users */}
       <SuggestedUsers />
