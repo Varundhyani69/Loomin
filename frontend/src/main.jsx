@@ -1,3 +1,4 @@
+// main.jsx
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -7,20 +8,20 @@ import { Provider } from "react-redux";
 import store from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 import persistStore from "redux-persist/es/persistStore";
-import SocketContext from "./context/SocketContext";
 import { io } from "socket.io-client";
+import SocketContext from "./context/SocketContext";
 
 const persistor = persistStore(store);
 
-// Initialize socket with userId
+// ✅ Get userId from storage after it's available
 const userId = localStorage.getItem("userId");
-const socket = io(import.meta.env.VITE_SOCKET_URL, {
-  withCredentials: true,
-  transports: ["websocket"],
-  query: {
-    userId,
-  },
-});
+const socket = userId
+  ? io(import.meta.env.VITE_SOCKET_URL, {
+    withCredentials: true,
+    transports: ["websocket"],
+    query: { userId },
+  })
+  : null; // don’t connect if not logged in
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
