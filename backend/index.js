@@ -8,7 +8,7 @@ import userRoute from "./routes/userRoute.js";
 import postRoute from "./routes/postRoute.js";
 import messageRoute from "./routes/messageRoute.js";
 import { setupSocket } from "./socket/socket.js";
-
+import http from "http";
 dotenv.config();
 
 // Validate environment variables
@@ -63,9 +63,13 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
     try {
         await connectDB(); // Wait for DB connection
-        const server = setupSocket(app);
+        const server = http.createServer(app);
+
+        // Attach socket.io to raw server
+        setupSocket(server);
+
         server.listen(port, () => {
-            console.log(`🚀 Server listening on port ${port}`);
+            console.log(`Server running on port ${port}`);
         });
     } catch (error) {
         console.error("Failed to start server:", error);

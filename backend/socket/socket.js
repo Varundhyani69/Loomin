@@ -1,5 +1,5 @@
+// socket/socket.js
 import { Server } from "socket.io";
-import http from "http";
 
 const userSocketMap = {};
 export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
@@ -11,18 +11,10 @@ const allowedOrigins = [
     "https://loomin-production.up.railway.app",
 ];
 
-const setupSocket = (app) => {
-    const server = http.createServer(app);
-
+const setupSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: (origin, callback) => {
-                if (!origin || allowedOrigins.includes(origin)) {
-                    callback(null, true);
-                } else {
-                    callback(new Error("Not allowed by CORS"));
-                }
-            },
+            origin: allowedOrigins,
             credentials: true,
             methods: ["GET", "POST"],
         },
@@ -50,7 +42,7 @@ const setupSocket = (app) => {
         });
     });
 
-    return server;
+    return io;
 };
 
 export { setupSocket, io };
