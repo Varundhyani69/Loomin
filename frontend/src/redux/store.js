@@ -1,9 +1,9 @@
 // store.js
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import authSlice from "./authSlice.js";
 import postSlice from "./postSlice.js";
 import chatSlice from "./chatSlice.js";
-import notificationSlice from './notificationSlice.js';
+import notificationReducer from "./notificationSlice.js";
 
 import {
     persistReducer,
@@ -13,24 +13,35 @@ import {
     PERSIST,
     PURGE,
     REGISTER
-} from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+} from "redux-persist";
+import storage from "redux-persist/lib/storage";
 
-const persistConfig = {
-    key: 'root',
-    version: 1,
-    storage
+// 🟨 Persist config for notificationSlice to only persist 'notifications' array
+const notificationPersistConfig = {
+    key: "notification",
+    storage,
+    whitelist: ["notifications"], // ✅ only notifications, not hasNewNotification
 };
 
+// 🟦 Root Reducer with nested persistReducer for notification
 const rootReducer = combineReducers({
     auth: authSlice,
     post: postSlice,
     chat: chatSlice,
-    notification: notificationSlice,
+    notification: persistReducer(notificationPersistConfig, notificationReducer), // ✅ wrapped
 });
+
+// 🟩 Persist full state
+const persistConfig = {
+    key: "root",
+    version: 1,
+    storage,
+    blacklist: [], // no global blacklist here
+};
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
+// 🧩 Store configuration
 const store = configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
