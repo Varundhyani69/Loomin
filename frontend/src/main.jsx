@@ -1,4 +1,3 @@
-// main.jsx
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -13,15 +12,16 @@ import SocketContext from "./context/SocketContext";
 
 const persistor = persistStore(store);
 
-// Get userId from storage
 const userId = localStorage.getItem("userId");
-const socket = userId
+const token = localStorage.getItem("token"); // Adjust based on where you store the token
+const socket = userId && token
   ? io(import.meta.env.VITE_SOCKET_URL || "https://loomin-backend-production.up.railway.app", {
     withCredentials: true,
-    transports: ["websocket", "polling"], // Allow fallback to polling
     query: { userId },
+    auth: { token }
   })
   : null;
+
 
 if (socket) {
   socket.on("connect", () => {
@@ -29,6 +29,9 @@ if (socket) {
   });
   socket.on("connect_error", (error) => {
     console.error("Socket connection error:", error.message);
+  });
+  socket.on("error", (error) => {
+    console.error("Socket error:", error.message);
   });
 }
 

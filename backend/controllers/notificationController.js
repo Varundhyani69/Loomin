@@ -1,4 +1,5 @@
 import Notification from "../models/notificationModel.js";
+import { io, getReceiverSocketId } from "../socket/socket.js";
 
 export const getNotifications = async (req, res) => {
     try {
@@ -8,18 +9,31 @@ export const getNotifications = async (req, res) => {
 
         return res.json({ success: true, notifications });
     } catch (error) {
+        console.error("getNotifications error:", error);
         return res.status(500).json({ success: false, message: "Error fetching notifications" });
     }
 };
 
-// ✅ Add this in notificationController.js
 export const markNotificationsSeen = async (req, res) => {
     try {
-        // If you ever store "seen" state in DB, update here.
-        // For now, just acknowledge it's been read.
+        await Notification.updateMany(
+            { receiver: req.id, seen: false },
+            { $set: { seen: true } }
+        );
+
+        const userSocketId = getReceiverSocketId ? getReceiverSocketId(req.id) : null;
+        if (io && userSocketId) {
+            console.log(`Emitting notificationsSeen to ${req.id} at socket ${userSocketId}`);
+            io.to(userSocketId).emit("notificationsSeen", {
+                message: "Notifications marked as seen"
+            });
+        } else {
+            console.warn(`Socket.IO not available or no socket for user ${req.id}`);
+        }
+
         return res.status(200).json({ success: true, message: "Notifications marked as seen" });
     } catch (error) {
-        console.error("Error marking notifications as seen:", error);
+        console.error("markNotificationsSeen error:", error);
         return res.status(500).json({ success: false, message: "Failed to mark as seen" });
     }
 };

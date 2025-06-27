@@ -35,11 +35,10 @@ export const register = async (req, res) => {
             }
         });
     } catch (error) {
-        console.log(error);
+        console.error("Register error:", error);
         return res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
 
 // LOGIN
 export const login = async (req, res) => {
@@ -76,21 +75,19 @@ export const login = async (req, res) => {
 
         return res.cookie('token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 24 * 60 * 60 * 1000
         }).json({
             success: true,
             message: `Welcome back ${user.username}`,
             user
         });
-
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: "Server error" });
+        console.error("Login error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
 
 // LOGOUT
 export const logout = async (req, res) => {
@@ -101,7 +98,8 @@ export const logout = async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
         }).json({ success: true, message: "Logout successfully" });
     } catch (error) {
-        console.log(error);
+        console.error("Logout error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
@@ -135,7 +133,6 @@ export const getProfile = async (req, res) => {
     }
 };
 
-
 // EDIT PROFILE
 export const editProfile = async (req, res) => {
     try {
@@ -151,7 +148,7 @@ export const editProfile = async (req, res) => {
 
         if (profilePicture) {
             try {
-                const fileUri = getDataUri(profilePicture); // this uses file.buffer from multer
+                const fileUri = getDataUri(profilePicture);
                 const cloudResponse = await cloudinary.uploader.upload(fileUri);
                 user.profilePicture = cloudResponse.secure_url;
             } catch (cloudErr) {
@@ -173,7 +170,6 @@ export const getSuggestesUser = async (req, res) => {
     try {
         const user = req.user;
 
-        // 💥 FIX: check if user is valid
         if (!user) {
             return res.status(400).json({ success: false, message: "Invalid user or no following list" });
         }
@@ -185,14 +181,11 @@ export const getSuggestesUser = async (req, res) => {
         }).limit(10).select("username profilePicture");
 
         res.status(200).json({ success: true, users: suggestions });
-
     } catch (err) {
         console.error("getSuggestesUser error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-
-
 
 // FOLLOW / UNFOLLOW
 export const followOrUnfollow = async (req, res) => {
@@ -228,20 +221,23 @@ export const followOrUnfollow = async (req, res) => {
             await Notification.create({ sender: userId, receiver: targetId, type: "follow" });
 
             const senderDetails = await User.findById(userId).select("username profilePicture");
-            const targetSocketId = getReceiverSocketId(targetId);
-            if (targetSocketId) {
+            const targetSocketId = getReceiverSocketId ? getReceiverSocketId(targetId) : null;
+            if (io && targetSocketId) {
+                console.log(`Emitting follow notification to ${targetId} at socket ${targetSocketId}`);
                 io.to(targetSocketId).emit("notification", {
                     type: "follow",
                     userId,
                     userDetails: senderDetails,
-                    message: "started following you"
+                    message: `${senderDetails.username} started following you`
                 });
+            } else {
+                console.warn(`Socket.IO not available or no socket for user ${targetId}`);
             }
 
             return res.json({ success: true, message: "Followed successfully" });
         }
     } catch (error) {
-        console.log(error);
+        console.error("followOrUnfollow error:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
@@ -251,32 +247,20 @@ export const deleteUser = async (req, res) => {
     try {
         const userId = req.id;
 
-        // 1. Find user's posts
         const userPosts = await Post.find({ author: userId });
         const postIds = userPosts.map(p => p._id);
 
-        // 2. Delete all comments made by the user
         await Comment.deleteMany({ author: userId });
-
-        // 3. Delete all comments on the user's posts
         await Comment.deleteMany({ post: { $in: postIds } });
-
-        // 4. Delete all posts made by the user
         await Post.deleteMany({ author: userId });
-
-        // 5. Remove likes by the user from all posts
         await Post.updateMany(
             { likes: userId },
             { $pull: { likes: userId } }
         );
-
-        // 6. Remove the user's posts from other users' bookmarks
         await User.updateMany(
             { bookmarks: { $in: postIds } },
             { $pull: { bookmarks: { $in: postIds } } }
         );
-
-        // 7. Remove this user from all followers and followings
         await User.updateMany(
             { followers: userId },
             { $pull: { followers: userId } }
@@ -285,21 +269,15 @@ export const deleteUser = async (req, res) => {
             { following: userId },
             { $pull: { following: userId } }
         );
-
-        // 8. Delete all messages sent or received by user
         await Message.deleteMany({
             $or: [{ sender: userId }, { receiver: userId }]
         });
-
-        // 9. Delete all notifications involving the user
         await Notification.deleteMany({
             $or: [{ sender: userId }, { receiver: userId }]
         });
 
-        // 10. Finally delete the user
         await User.findByIdAndDelete(userId);
 
-        // 11. Clear token
         res.clearCookie('token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -308,7 +286,7 @@ export const deleteUser = async (req, res) => {
 
         return res.json({ success: true, message: "Account and related data deleted successfully" });
     } catch (error) {
-        console.error("❌ Failed to delete user completely:", error);
+        console.error("deleteUser error:", error);
         res.status(500).json({ success: false, message: "Failed to delete account" });
     }
 };
@@ -329,7 +307,7 @@ export const getFollowings = async (req, res) => {
     }
 };
 
-// Search users by username
+// SEARCH USERS
 export const searchUsers = async (req, res) => {
     try {
         const username = req.query.username;
@@ -343,11 +321,12 @@ export const searchUsers = async (req, res) => {
 
         res.status(200).json({ success: true, users });
     } catch (error) {
-        console.error("Search Error:", error);
+        console.error("searchUsers error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
+// GET USER BOOKMARKS
 export const getUserBookmarks = async (req, res) => {
     try {
         const profile = await User.findById(req.user._id)
@@ -369,7 +348,7 @@ export const getUserBookmarks = async (req, res) => {
     }
 };
 
-
+// GET MY PROFILE
 export const getMyProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select("-password");
@@ -377,9 +356,7 @@ export const getMyProfile = async (req, res) => {
 
         res.status(200).json({ success: true, user });
     } catch (error) {
-        console.error("🚨 Error in getMyProfile:", error);
+        console.error("getMyProfile error:", error);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
-
-
