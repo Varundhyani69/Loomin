@@ -79,10 +79,10 @@ function App() {
       path: "/",
       element: <MainLayout />,
       children: [
-        { path: "/", element: <Home /> },
         {
-          element: <ProtectedRoute />,
+          element: <ProtectedRoute />, // 👈 wrap Home + others inside this
           children: [
+            { path: "/", element: <Home /> }, // ✅ now protected
             { path: "/profile/:id", element: <Profile /> },
             { path: "/account/edit", element: <EditProfile /> },
             { path: "/chat", element: <ChatPage /> },
@@ -94,6 +94,7 @@ function App() {
     { path: "/login", element: <Login /> },
     { path: "/signup", element: <Signup /> },
   ]);
+
 
   return (
     <SocketContext.Provider value={socket}>
