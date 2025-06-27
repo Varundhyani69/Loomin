@@ -2,7 +2,7 @@ import express from "express";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import { editProfile, followOrUnfollow, getProfile, getSuggestesUser, login, logout, register, deleteUser, getFollowings, searchUsers, getUserBookmarks, getMyProfile } from "../controllers/userController.js";
 import uploader from "../middlewares/multer.js";
-import { getNotifications } from "../controllers/notificationController.js";
+import { getNotifications, markNotificationsSeen } from "../controllers/notificationController.js";
 import { getMessage, sendMessage } from "../controllers/messageController.js";
 
 const router = express.Router();
@@ -19,6 +19,7 @@ router.delete('/delete', isAuthenticated, deleteUser);
 router.get('/suggested', isAuthenticated, getSuggestesUser);
 router.get('/:id/profile', isAuthenticated, getProfile);
 router.get('/notifications', isAuthenticated, getNotifications);
+router.post('/notifications/mark-seen', isAuthenticated, markNotificationsSeen);
 router.get('/followings', isAuthenticated, getFollowings);
 router.get('/search', isAuthenticated, searchUsers);
 router.get('/bookmarks', isAuthenticated, getUserBookmarks);
