@@ -3,5 +3,12 @@
         "builder": "NIXPACKS",
         "buildCommand": "cd backend && npm install && cd ../frontend && npm install && npm run build",
         "startCommand": "cd backend && npm start"
+    },
+    "watchPaths": [
+        "backend/**/*",
+        "frontend/**/*"
+    ],
+    "engines": {
+        "node": "18.x"
     }
 }

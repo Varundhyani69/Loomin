@@ -13,15 +13,24 @@ import SocketContext from "./context/SocketContext";
 
 const persistor = persistStore(store);
 
-// ✅ Get userId from storage after it's available
+// Get userId from storage
 const userId = localStorage.getItem("userId");
 const socket = userId
-  ? io(import.meta.env.VITE_SOCKET_URL, {
+  ? io(import.meta.env.VITE_SOCKET_URL || "https://loomin-backend-production.up.railway.app", {
     withCredentials: true,
-    transports: ["websocket"],
+    transports: ["websocket", "polling"], // Allow fallback to polling
     query: { userId },
   })
-  : null; // don’t connect if not logged in
+  : null;
+
+if (socket) {
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+  });
+  socket.on("connect_error", (error) => {
+    console.error("Socket connection error:", error.message);
+  });
+}
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

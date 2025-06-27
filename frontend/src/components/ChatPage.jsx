@@ -1,3 +1,4 @@
+// src/components/ChatPage.jsx
 import { setSelectedUser } from '@/redux/authSlice';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import React, { useEffect, useState, useContext } from 'react';
@@ -59,8 +60,24 @@ const ChatPage = () => {
             }
         };
 
+        const handleConnectError = (error) => {
+            console.error("Socket connection error:", error.message);
+            toast.error(`Socket connection failed: ${error.message}`);
+        };
+
+        const handleConnect = () => {
+            console.log("Socket connected:", socket.id);
+        };
+
         socket.on("newMessage", handleIncomingMessage);
-        return () => socket.off("newMessage", handleIncomingMessage);
+        socket.on("connect_error", handleConnectError);
+        socket.on("connect", handleConnect);
+
+        return () => {
+            socket.off("newMessage", handleIncomingMessage);
+            socket.off("connect_error", handleConnectError);
+            socket.off("connect", handleConnect);
+        };
     }, [socket, dispatch, selectedUser]);
 
     const sendMessageHandler = async (receiverId) => {
@@ -141,7 +158,6 @@ const ChatPage = () => {
                         </div>
                     </div>
                     <Messages selectedUser={selectedUser} />
-
                 </section>
             ) : (
                 <div className='flex flex-col items-center justify-center mx-auto'>

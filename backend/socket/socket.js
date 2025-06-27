@@ -4,17 +4,23 @@ import { Server } from "socket.io";
 const userSocketMap = {};
 export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
 
-let io;
-
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://loomin-production.up.railway.app",
-];
-
 const setupSocket = (server) => {
-    io = new Server(server, {
+    const io = new Server(server, {
         cors: {
-            origin: allowedOrigins,
+            // Allow both development and production frontend origins
+            origin: (origin, callback) => {
+                const allowedOrigins = [
+                    "http://localhost:5173",
+                    "https://loomin-production.up.railway.app",
+                    "https://loomin-backend-production.up.railway.app", // Added to match frontend socket URL
+                    // Add your actual frontend production URL here, e.g., "https://your-frontend-domain.com"
+                ];
+                if (!origin || allowedOrigins.includes(origin)) {
+                    callback(null, true);
+                } else {
+                    callback(new Error("Not allowed by CORS"));
+                }
+            },
             credentials: true,
             methods: ["GET", "POST"],
         },
@@ -22,6 +28,7 @@ const setupSocket = (server) => {
 
     io.on("connection", (socket) => {
         const userId = socket.handshake.query.userId;
+        console.log(`User connected: ${userId}, Socket ID: ${socket.id}`);
         if (userId) {
             userSocketMap[userId] = socket.id;
         }
@@ -29,6 +36,7 @@ const setupSocket = (server) => {
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
         socket.on("disconnect", () => {
+            console.log(`User disconnected: ${userId}, Socket ID: ${socket.id}`);
             if (userId) delete userSocketMap[userId];
             io.emit("getOnlineUsers", Object.keys(userSocketMap));
         });
@@ -45,4 +53,4 @@ const setupSocket = (server) => {
     return io;
 };
 
-export { setupSocket, io };
+export { setupSocket };

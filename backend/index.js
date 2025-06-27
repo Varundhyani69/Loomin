@@ -9,6 +9,9 @@ import postRoute from "./routes/postRoute.js";
 import messageRoute from "./routes/messageRoute.js";
 import { setupSocket } from "./socket/socket.js";
 import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
 
 // Validate environment variables
@@ -16,12 +19,9 @@ if (!process.env.PORT || !process.env.MONGO_URI) {
     console.error("Error: Missing required environment variables (PORT or MONGO_URI)");
     process.exit(1);
 }
-import path from "path";
-import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -32,7 +32,19 @@ app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: "https://loomin-production.up.railway.app",
+        origin: (origin, callback) => {
+            const allowedOrigins = [
+                "http://localhost:5173",
+                "https://loomin-production.up.railway.app",
+                "https://loomin-backend-production.up.railway.app",
+                // Add your actual frontend production URL here
+            ];
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE"],
     })
@@ -52,7 +64,6 @@ app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
-
 // Global error-handling middleware
 app.use((err, req, res, next) => {
     console.error("Unhandled error:", err);
@@ -62,14 +73,14 @@ app.use((err, req, res, next) => {
 // Connect to DB and start server
 const startServer = async () => {
     try {
-        await connectDB(); // Wait for DB connection
+        await connectDB();
         const server = http.createServer(app);
 
         // Attach socket.io to raw server
         setupSocket(server);
 
         server.listen(port, () => {
-            console.log(`Server running on port ${port}`);
+            console.log(`Server running on port ${port} in ${process.env.NODE_ENV} mode`);
         });
     } catch (error) {
         console.error("Failed to start server:", error);
