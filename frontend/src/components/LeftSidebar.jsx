@@ -72,7 +72,7 @@ const LeftSidebar = () => {
             return;
         }
         try {
-            const res = await axios.get(`${API_BASE_URL}user/search?username=${value}`, {
+            const res = await axios.get(`${API_BASE_URL}/user/search?username=${value}`, {
                 withCredentials: true,
             });
             if (res.data.success) {

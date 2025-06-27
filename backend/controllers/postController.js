@@ -9,12 +9,16 @@ import Notification from "../models/notificationModel.js";
 
 export const getFollowingPosts = async (req, res) => {
     try {
-        const currentUser = req.user;
+        // ✅ Explicitly populate following
+        const currentUser = await User.findById(req.id).populate('following');
+
         if (!currentUser || !currentUser.following) {
             return res.status(400).json({ success: false, message: "Invalid user or no following list" });
         }
 
-        const posts = await Post.find({ author: { $in: [...currentUser.following, currentUser._id] } })
+        const posts = await Post.find({
+            author: { $in: [...currentUser.following.map(f => f._id), currentUser._id] }
+        })
             .populate("author", "username profilePicture")
             .populate({
                 path: 'comments',
@@ -31,6 +35,7 @@ export const getFollowingPosts = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
 
 export const getAllPost = async (req, res) => {
     try {

@@ -8,7 +8,7 @@ import EditProfile from "./components/EditProfile.jsx";
 import ChatPage from "./components/ChatPage";
 import Notification from "./components/Notification";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import useGetAllNotifications from "@/hooks/useGetAllNotifications";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +22,7 @@ function App() {
   const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const [socket, setSocket] = useState(null);
-
+  useGetAllNotifications();
   // ✅ Connect socket after user is set
   useEffect(() => {
     if (!user) return;

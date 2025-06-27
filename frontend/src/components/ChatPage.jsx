@@ -27,7 +27,8 @@ const ChatPage = () => {
                     `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/user/followings`,
                     { withCredentials: true }
                 );
-                const users = res.data.users || res.data.followings || [];
+                const users = res.data.followings || [];
+
                 setFollowings(Array.isArray(users) ? users : []);
             } catch (err) {
                 toast.error("Failed to fetch followings");

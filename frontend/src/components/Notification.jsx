@@ -14,8 +14,9 @@ const Notification = () => {
             ) : (
                 <ul className="space-y-4">
                     {notifications.map((noti, index) => {
-                        const username = noti.userDetails?.username || 'Someone';
-                        const profilePicture = noti.userDetails?.profilePicture;
+                        const sender = noti.sender || {};
+                        const username = sender.username || 'Someone';
+                        const profilePicture = sender.profilePicture;
 
                         let actionMessage = '';
                         switch (noti.type) {
@@ -32,7 +33,7 @@ const Notification = () => {
                                 actionMessage = 'commented on your post';
                                 break;
                             default:
-                                actionMessage = noti.message || 'sent you a notification';
+                                actionMessage = 'sent you a notification';
                         }
 
                         return (

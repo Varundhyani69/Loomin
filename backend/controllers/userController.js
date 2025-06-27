@@ -143,22 +143,28 @@ export const editProfile = async (req, res) => {
         const { bio, gender } = req.body;
         const profilePicture = req.file;
 
-        const user = await User.findById(userId).select('-password');
-        if (!user) return res.json({ success: false, message: "User not found" });
+        const user = await User.findById(userId).select("-password");
+        if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
         if (bio) user.bio = bio;
         if (gender) user.gender = gender;
 
         if (profilePicture) {
-            const fileUri = getDataUri(profilePicture);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri);
-            user.profilePicture = cloudResponse.secure_url;
+            try {
+                const fileUri = getDataUri(profilePicture); // this uses file.buffer from multer
+                const cloudResponse = await cloudinary.uploader.upload(fileUri);
+                user.profilePicture = cloudResponse.secure_url;
+            } catch (cloudErr) {
+                console.error("Cloudinary Upload Error:", cloudErr);
+                return res.status(500).json({ success: false, message: "Image upload failed" });
+            }
         }
 
         await user.save();
-        return res.json({ success: true, message: "Profile updated", user });
+        return res.status(200).json({ success: true, message: "Profile updated", user });
     } catch (error) {
-        res.status(500).json({ success: false, message: "Server error" });
+        console.error("editProfile Error:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
     }
 };
 
