@@ -1,5 +1,6 @@
-// context/SocketContext.js
+// src/context/SocketContext.js
 import { createContext } from "react";
 
-const SocketContext = createContext(null);
+const SocketContext = createContext({ socket: null });
+
 export default SocketContext;

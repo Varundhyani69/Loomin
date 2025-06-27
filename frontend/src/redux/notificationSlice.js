@@ -11,7 +11,9 @@ const notificationSlice = createSlice({
     reducers: {
         addNotification: (state, action) => {
             state.notifications.unshift(action.payload);
-            state.hasNewNotification = true; // red dot ON when new notification arrives
+            if (!action.payload.read) {
+                state.hasNewNotification = true;
+            }
         },
         setHasNewNotification: (state, action) => {
             state.hasNewNotification = action.payload; // set false when user checks notifications

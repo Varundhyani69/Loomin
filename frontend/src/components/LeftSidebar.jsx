@@ -7,17 +7,18 @@ import {
     Search,
     Bell
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react'; // ✅ Added useContext, useEffect
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuthUser } from '@/redux/authSlice';
-import CreatePost from './CreatePost';
 import { setHasNewMessage } from '@/redux/chatSlice';
 import { setHasNewNotification } from '@/redux/notificationSlice';
+import CreatePost from './CreatePost';
 import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@radix-ui/react-dialog';
 import { Input } from './ui/input';
+import SocketContext from '@/context/SocketContext'; // ✅ Added socket context
 
 const LeftSidebar = () => {
     const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
@@ -30,6 +31,27 @@ const LeftSidebar = () => {
     const { user } = useSelector(store => store.auth);
     const { hasNewMessage } = useSelector(store => store.chat);
     const { hasNewNotification } = useSelector(store => store.notification);
+    const { socket } = useContext(SocketContext); // ✅ Destructure socket from context
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewMessage = () => {
+            dispatch(setHasNewMessage(true)); // ✅ Show red dot
+        };
+
+        const handleNewNotification = () => {
+            dispatch(setHasNewNotification(true)); // ✅ Show red dot
+        };
+
+        socket.on('newMessage', handleNewMessage);
+        socket.on('newNotification', handleNewNotification);
+
+        return () => {
+            socket.off('newMessage', handleNewMessage);
+            socket.off('newNotification', handleNewNotification);
+        };
+    }, [socket, dispatch]); // ✅ Dependency array
 
     const logoutHandler = async () => {
         try {
@@ -52,11 +74,11 @@ const LeftSidebar = () => {
         else if (textType === 'Profile') navigate(`/profile/${user?._id}`, { replace: true });
         else if (textType === 'Home') navigate('/', { replace: true });
         else if (textType === 'Messages') {
-            dispatch(setHasNewMessage(false));
+            dispatch(setHasNewMessage(false)); // ✅ Hide red dot
             navigate('/chat', { replace: true });
         }
         else if (textType === 'Notifications') {
-            dispatch(setHasNewNotification(false));
+            dispatch(setHasNewNotification(false)); // ✅ remove red dot
             navigate('/notifications');
         }
         else if (textType === 'Search') {
@@ -146,7 +168,6 @@ const LeftSidebar = () => {
                 <CreatePost open={open} setOpen={setOpen} />
             </div >
 
-            {/* ✅ Search Popup Dialog */}
             <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
                 <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
                 <DialogContent className="bg-[#1e1e1e] text-white z-50 w-full max-w-md fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl shadow-2xl">
@@ -189,7 +210,6 @@ const LeftSidebar = () => {
                     </div>
                 </DialogContent>
             </Dialog>
-
         </>
     );
 };

@@ -13,7 +13,7 @@ import CommentDialog from './CommentDialog';
 const Messages = ({ selectedUser }) => {
     const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
     const dispatch = useDispatch();
-    const socket = useContext(SocketContext);
+    const { socket } = useContext(SocketContext);
     const { messages } = useSelector((state) => state.chat);
     const currentUserId = useSelector((state) => state.auth.user?._id);
     const messagesEndRef = useRef(null);

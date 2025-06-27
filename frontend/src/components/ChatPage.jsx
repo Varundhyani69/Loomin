@@ -3,8 +3,6 @@ import { setSelectedUser } from '@/redux/authSlice';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import React, { useEffect, useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
 import { MessageCircleCode } from 'lucide-react';
 import Messages from './Messages';
 import { toast } from 'sonner';
@@ -18,7 +16,8 @@ const ChatPage = () => {
     const dispatch = useDispatch();
     const [textMessage, setTextMessage] = useState("");
     const [followings, setFollowings] = useState([]);
-    const socket = useContext(SocketContext);
+    const { socket } = useContext(SocketContext);
+
     const [newMessageFrom, setNewMessageFrom] = useState([]);
 
     useEffect(() => {

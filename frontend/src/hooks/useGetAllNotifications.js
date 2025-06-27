@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setHasNewNotification, addNotification } from "@/redux/notificationSlice";
+import { setHasNewNotification, setNotifications } from "@/redux/notificationSlice";
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -15,10 +15,10 @@ const useGetAllNotifications = () => {
                 if (res.data.success) {
                     const notifications = res.data.notifications || [];
 
-                    const hasUnread = notifications.some(n => !n.read);
-                    dispatch(setHasNewNotification(hasUnread));
+                    dispatch(setNotifications(notifications)); // ✅ use full list setter
 
-                    notifications.forEach(n => dispatch(addNotification(n)));
+                    const hasUnread = notifications.some(n => !n.read);
+                    dispatch(setHasNewNotification(hasUnread)); // ✅ only true if unread exists
                 }
             } catch (err) {
                 console.error("❌ Failed to fetch notifications", err);

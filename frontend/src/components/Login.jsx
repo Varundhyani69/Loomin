@@ -1,31 +1,35 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
+import SocketContext from "@/context/SocketContext";
+import Cookies from "js-cookie";
 
 const Login = () => {
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
+
   const [input, setInput] = useState({
     email: "",
     password: "",
   });
+
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { socket } = useContext(SocketContext);
 
   const { user } = useSelector((store) => store.auth);
 
-  const redirectPath =
-    new URLSearchParams(location.search).get("redirect") || "/";
+  const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
 
-  // ✅ Redirect if already logged in
   useEffect(() => {
     if (user) navigate(redirectPath, { replace: true });
   }, [user, navigate, redirectPath]);
@@ -41,9 +45,21 @@ const Login = () => {
       const res = await axios.post(`${API_BASE_URL}/user/login`, input, {
         withCredentials: true,
       });
+
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
+
+        // ✅ Connect socket with token from cookies
+        const token = Cookies.get("token");
+        if (token) {
+          socket.auth = { token };
+          socket.connect();
+
+          // Optional: emit an event after connecting
+          socket.emit("user-connected", res.data.user._id);
+        }
+
         navigate(redirectPath);
         setInput({ email: "", password: "" });
       }

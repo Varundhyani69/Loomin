@@ -3,7 +3,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import SuggestedUsers from './SuggestedUsers';
-import { Bell } from 'lucide-react';
 
 const RightSidebar = () => {
   const { user } = useSelector((store) => store.auth);

@@ -48,7 +48,7 @@ const setupSocket = (server) => {
             socket.userId = user._id;
             next();
         } catch (error) {
-            console.error("Socket auth error:", error.message);
+            // console.error("Socket auth error:", error.message);
             next(new Error("Authentication failed"));
         }
     });
@@ -87,11 +87,11 @@ const setupSocket = (server) => {
         });
 
         socket.on("error", (err) => {
-            console.error("WebSocket error:", err);
+            // console.error("WebSocket error:", err);
         });
 
         socket.on("connect_error", (err) => {
-            console.error("WebSocket connection error:", err.message);
+            // console.error("WebSocket connection error:", err.message);
         });
     });
 
