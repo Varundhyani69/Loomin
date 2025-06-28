@@ -1,4 +1,3 @@
-// chatSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const chatSlice = createSlice({
@@ -7,7 +6,7 @@ const chatSlice = createSlice({
         onlineUsers: [],
         messages: [],
         hasNewMessage: false,
-        newMessageFrom: [], // ✅ Track unread senders
+        newMessageFrom: [], // 🆕 users who sent unread messages
     },
     reducers: {
         setOnlineUsers: (state, action) => {
@@ -26,15 +25,18 @@ const chatSlice = createSlice({
         setHasNewMessage: (state, action) => {
             state.hasNewMessage = action.payload;
         },
-        addNewMessageSender: (state, action) => {
+        addNewMessageFrom: (state, action) => {
             const senderId = action.payload;
             if (!state.newMessageFrom.includes(senderId)) {
                 state.newMessageFrom.push(senderId);
             }
         },
-        clearNewMessageSender: (state, action) => {
-            const senderId = action.payload;
-            state.newMessageFrom = state.newMessageFrom.filter(id => id !== senderId);
+        clearNewMessageFrom: (state, action) => {
+            const userId = action.payload;
+            state.newMessageFrom = state.newMessageFrom.filter(id => id !== userId);
+        },
+        clearAllNewMessageFrom: (state) => {
+            state.newMessageFrom = [];
         }
     },
 });
@@ -44,8 +46,9 @@ export const {
     setMessage,
     appendMessage,
     setHasNewMessage,
-    addNewMessageSender,
-    clearNewMessageSender
+    addNewMessageFrom,
+    clearNewMessageFrom,
+    clearAllNewMessageFrom
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

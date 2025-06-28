@@ -7,7 +7,7 @@ import {
     Search,
     Bell
 } from 'lucide-react';
-import React, { useState, useContext, useEffect } from 'react'; // ✅ Added useContext, useEffect
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -18,7 +18,7 @@ import { setHasNewNotification } from '@/redux/notificationSlice';
 import CreatePost from './CreatePost';
 import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@radix-ui/react-dialog';
 import { Input } from './ui/input';
-import SocketContext from '@/context/SocketContext'; // ✅ Added socket context
+import SocketContext from '@/context/SocketContext';
 
 const LeftSidebar = () => {
     const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
@@ -31,27 +31,28 @@ const LeftSidebar = () => {
     const { user } = useSelector(store => store.auth);
     const { hasNewMessage } = useSelector(store => store.chat);
     const { hasNewNotification } = useSelector(store => store.notification);
-    const { socket } = useContext(SocketContext); // ✅ Destructure socket from context
+    const socket = useContext(SocketContext); // ✅ Don't destructure socket
 
+    // ✅ Listen to real-time events for red dot triggers
     useEffect(() => {
         if (!socket) return;
 
         const handleNewMessage = () => {
-            dispatch(setHasNewMessage(true)); // ✅ Show red dot
+            dispatch(setHasNewMessage(true));
         };
 
         const handleNewNotification = () => {
-            dispatch(setHasNewNotification(true)); // ✅ Show red dot
+            dispatch(setHasNewNotification(true));
         };
 
-        socket.on('newMessage', handleNewMessage);
-        socket.on('newNotification', handleNewNotification);
+        socket.on("newMessage", handleNewMessage);
+        socket.on("notification", handleNewNotification);
 
         return () => {
-            socket.off('newMessage', handleNewMessage);
-            socket.off('newNotification', handleNewNotification);
+            socket.off("newMessage", handleNewMessage);
+            socket.off("notification", handleNewNotification);
         };
-    }, [socket, dispatch]); // ✅ Dependency array
+    }, [socket, dispatch]);
 
     const logoutHandler = async () => {
         try {
@@ -74,14 +75,13 @@ const LeftSidebar = () => {
         else if (textType === 'Profile') navigate(`/profile/${user?._id}`, { replace: true });
         else if (textType === 'Home') navigate('/', { replace: true });
         else if (textType === 'Messages') {
-            dispatch(setHasNewMessage(false)); // ✅ Hide red dot
+            dispatch(setHasNewMessage(false));
             navigate('/chat', { replace: true });
         }
-        else if (textType === 'Messages') {
-            dispatch(setHasNewMessage(false)); // ✅ Clear red dot
-            navigate('/chat');
+        else if (textType === 'Notifications') {
+            dispatch(setHasNewNotification(false));
+            navigate('/notifications');
         }
-
         else if (textType === 'Search') {
             setSearchOpen(true);
         }
@@ -121,17 +121,16 @@ const LeftSidebar = () => {
             text: 'Messages',
         },
         { icon: <PlusSquare />, text: 'Create' },
-        // LeftSidebar.jsx
         {
             icon: (
                 <div className="relative">
-                    <MessageCircle />
-                    {hasNewMessage && (
+                    <Bell />
+                    {hasNewNotification && (
                         <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
                     )}
                 </div>
             ),
-            text: 'Messages',
+            text: 'Notifications',
         },
         {
             icon: (
