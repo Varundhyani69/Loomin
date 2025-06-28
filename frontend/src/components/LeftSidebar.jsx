@@ -201,7 +201,7 @@ const LeftSidebar = () => {
                                         <AvatarImage
                                             src={u.profilePicture}
                                             alt={u.username}
-                                            className="rounded-full object-cover"
+                                            className="rounded-full h-8 w-8 object-cover"
                                         />
                                         <AvatarFallback>
                                             {u.username[0]?.toUpperCase()}
