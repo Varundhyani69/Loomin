@@ -77,10 +77,11 @@ const LeftSidebar = () => {
             dispatch(setHasNewMessage(false)); // ✅ Hide red dot
             navigate('/chat', { replace: true });
         }
-        else if (textType === 'Notifications') {
-            dispatch(setHasNewNotification(false)); // ✅ remove red dot
-            navigate('/notifications');
+        else if (textType === 'Messages') {
+            dispatch(setHasNewMessage(false)); // ✅ Clear red dot
+            navigate('/chat');
         }
+
         else if (textType === 'Search') {
             setSearchOpen(true);
         }
@@ -120,16 +121,17 @@ const LeftSidebar = () => {
             text: 'Messages',
         },
         { icon: <PlusSquare />, text: 'Create' },
+        // LeftSidebar.jsx
         {
             icon: (
                 <div className="relative">
-                    <Bell />
-                    {hasNewNotification && (
+                    <MessageCircle />
+                    {hasNewMessage && (
                         <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
                     )}
                 </div>
             ),
-            text: 'Notifications',
+            text: 'Messages',
         },
         {
             icon: (
