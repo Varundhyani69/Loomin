@@ -16,7 +16,7 @@ const isAuthenticated = async (req, res, next) => {
         }
 
         req.user = user;
-        req.id = user._id; // ✅ important
+        req.id = user._id;
         next();
     } catch (error) {
         console.error("Auth Middleware Error:", error);

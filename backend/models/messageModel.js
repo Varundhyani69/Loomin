@@ -4,7 +4,7 @@ const MessageSchema = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   receiverId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   message: { type: String, required: false },
-  postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post" } // ✅ for shared post
+  postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post" }
 }, { timestamps: true });
 
 const Message = mongoose.model("Message", MessageSchema);

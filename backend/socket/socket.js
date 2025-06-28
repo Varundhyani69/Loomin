@@ -18,7 +18,6 @@ const setupSocket = (server) => {
                     "http://localhost:5173",
                     "https://loomin-production.up.railway.app",
                     "https://loomin-backend-production.up.railway.app",
-                    // Add your actual frontend production URL here
                 ];
                 if (!origin || allowedOrigins.includes(origin)) {
                     callback(null, true);
@@ -29,10 +28,9 @@ const setupSocket = (server) => {
             credentials: true,
             methods: ["GET", "POST"],
         },
-        maxHttpBufferSize: 1e8, // 100 MB to handle large payloads
+        maxHttpBufferSize: 1e8,
     });
 
-    // JWT authentication middleware
     io.use(async (socket, next) => {
         try {
             const token = socket.handshake.auth.token || socket.handshake.headers.cookie?.match(/token=([^;]+)/)?.[1];

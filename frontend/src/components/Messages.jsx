@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import useGetAllMessage from '@/hooks/useGetAllMessage';
 import SocketContext from '@/context/SocketContext';
-import { appendMessage, setHasNewMessage } from '@/redux/chatSlice';
+import { appendMessage } from '@/redux/chatSlice';
 import axios from 'axios';
 import { setSelectedPost } from '@/redux/postSlice';
 import CommentDialog from './CommentDialog';
 
 const Messages = ({ selectedUser }) => {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
     const dispatch = useDispatch();
     const { socket } = useContext(SocketContext);
     const { messages } = useSelector((state) => state.chat);
@@ -30,13 +30,7 @@ const Messages = ({ selectedUser }) => {
     }, [messages]);
 
     useEffect(() => {
-        if (selectedUser?._id) {
-            dispatch(setHasNewMessage(false));
-        }
-    }, [selectedUser?._id, dispatch]);
-
-    useEffect(() => {
-        if (!socket || !selectedUser?._id) return;
+        if (!socket || !selectedUser?._id || typeof socket.on !== 'function') return;
 
         const handleNewMessage = async (newMsg) => {
             const isChatOpen =
@@ -58,8 +52,6 @@ const Messages = ({ selectedUser }) => {
 
             if (isChatOpen) {
                 dispatch(appendMessage(newMsg));
-            } else {
-                dispatch(setHasNewMessage(true));
             }
         };
 
@@ -85,7 +77,6 @@ const Messages = ({ selectedUser }) => {
 
             if (res.data.success) {
                 setNewMessage("");
-                // Message will be added via socket, but just in case:
                 dispatch(appendMessage(res.data.newMessage));
             }
         } catch (err) {
@@ -143,7 +134,6 @@ const Messages = ({ selectedUser }) => {
                 )}
             </div>
 
-            {/* Send Message Input */}
             <div className="p-3 border-t border-gray-700 flex gap-2 items-center">
                 <input
                     className="flex-1 bg-[#1f1f1f] text-white px-4 py-2 rounded-xl border border-gray-600 outline-none"

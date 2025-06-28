@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     notifications: [],
-    hasNewNotification: false, // this should NOT persist
 };
 
 const notificationSlice = createSlice({
@@ -11,12 +10,6 @@ const notificationSlice = createSlice({
     reducers: {
         addNotification: (state, action) => {
             state.notifications.unshift(action.payload);
-            if (!action.payload.read) {
-                state.hasNewNotification = true;
-            }
-        },
-        setHasNewNotification: (state, action) => {
-            state.hasNewNotification = action.payload; // set false when user checks notifications
         },
         setNotifications: (state, action) => {
             state.notifications = action.payload;
@@ -26,7 +19,6 @@ const notificationSlice = createSlice({
 
 export const {
     addNotification,
-    setHasNewNotification,
     setNotifications
 } = notificationSlice.actions;
 

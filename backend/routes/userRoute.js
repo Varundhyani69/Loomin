@@ -7,7 +7,6 @@ import { getMessage, sendMessage } from "../controllers/messageController.js";
 
 const router = express.Router();
 
-// ✅ USER AUTH + PROFILE
 router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
@@ -15,7 +14,6 @@ router.post('/profile/edit', isAuthenticated, uploader.single('profilePhoto'), e
 router.post('/followorunfollow/:id', isAuthenticated, followOrUnfollow);
 router.delete('/delete', isAuthenticated, deleteUser);
 
-// ✅ USER UTILS
 router.get('/suggested', isAuthenticated, getSuggestesUser);
 router.get('/:id/profile', isAuthenticated, getProfile);
 router.get('/notifications', isAuthenticated, getNotifications);
@@ -24,10 +22,6 @@ router.get('/followings', isAuthenticated, getFollowings);
 router.get('/search', isAuthenticated, searchUsers);
 router.get('/bookmarks', isAuthenticated, getUserBookmarks);
 
-
-
-
-// ✅ MESSAGES
 router.post('/message/send/:id', isAuthenticated, sendMessage);
 router.get('/message/all/:id', isAuthenticated, getMessage);
 router.get("/profile", isAuthenticated, getMyProfile);

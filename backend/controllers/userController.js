@@ -7,7 +7,7 @@ import cloudinary from "../utils/cloudinary.js";
 import Notification from "../models/notificationModel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
-// REGISTER
+
 export const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -40,7 +40,6 @@ export const register = async (req, res) => {
     }
 };
 
-// LOGIN
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -89,7 +88,6 @@ export const login = async (req, res) => {
     }
 };
 
-// LOGOUT
 export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
@@ -103,7 +101,6 @@ export const logout = async (req, res) => {
     }
 };
 
-// GET PROFILE
 export const getProfile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -133,7 +130,6 @@ export const getProfile = async (req, res) => {
     }
 };
 
-// EDIT PROFILE
 export const editProfile = async (req, res) => {
     try {
         const userId = req.id;
@@ -165,7 +161,6 @@ export const editProfile = async (req, res) => {
     }
 };
 
-// GET SUGGESTED USERS
 export const getSuggestesUser = async (req, res) => {
     try {
         const user = req.user;
@@ -187,7 +182,6 @@ export const getSuggestesUser = async (req, res) => {
     }
 };
 
-// FOLLOW / UNFOLLOW
 export const followOrUnfollow = async (req, res) => {
     try {
         const userId = req.id;
@@ -242,7 +236,6 @@ export const followOrUnfollow = async (req, res) => {
     }
 };
 
-// DELETE USER
 export const deleteUser = async (req, res) => {
     try {
         const userId = req.id;
@@ -291,7 +284,6 @@ export const deleteUser = async (req, res) => {
     }
 };
 
-// GET PEOPLE I FOLLOW
 export const getFollowings = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).populate('following', 'username profilePicture');
@@ -307,7 +299,6 @@ export const getFollowings = async (req, res) => {
     }
 };
 
-// SEARCH USERS
 export const searchUsers = async (req, res) => {
     try {
         const username = req.query.username;
@@ -326,7 +317,6 @@ export const searchUsers = async (req, res) => {
     }
 };
 
-// GET USER BOOKMARKS
 export const getUserBookmarks = async (req, res) => {
     try {
         const profile = await User.findById(req.user._id)
@@ -348,7 +338,6 @@ export const getUserBookmarks = async (req, res) => {
     }
 };
 
-// GET MY PROFILE
 export const getMyProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select("-password");

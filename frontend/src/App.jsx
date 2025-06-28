@@ -13,12 +13,10 @@ import { useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setOnlineUsers,
-  setHasNewMessage,
   appendMessage,
 } from "./redux/chatSlice";
 import {
   addNotification,
-  setHasNewNotification,
 } from "./redux/notificationSlice";
 import useAuthCheck from "./hooks/useAuthCheck";
 import SocketContext from "./context/SocketContext";
@@ -30,7 +28,7 @@ function App() {
 
   const { user, selectedUser } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
-  const { socket } = useContext(SocketContext); // ✅ FIXED HERE
+  const { socket } = useContext(SocketContext);
 
   useEffect(() => {
     if (!socket || !user) return;
@@ -40,17 +38,10 @@ function App() {
     });
 
     socket.on("newMessage", (msg) => {
-      if (
-        !selectedUser ||
-        (msg.senderId !== selectedUser._id && msg.receiverId !== selectedUser._id)
-      ) {
-        dispatch(setHasNewMessage(true));
-      }
       dispatch(appendMessage(msg));
     });
 
     socket.on("notification", (notification) => {
-      dispatch(setHasNewNotification(true));
       dispatch(addNotification(notification));
       toast(notification.message);
     });

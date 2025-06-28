@@ -13,11 +13,11 @@ const Home = () => {
 
   return (
     <div className="flex flex-col md:flex-row bg-[#121212] min-h-screen">
-      <div className="flex-grow">
+      <div className="flex-1">
         <Feed />
         <Outlet />
       </div>
-      <div className="hidden xl:block">
+      <div className="hidden xl:block w-[300px] pr-6">
         <RightSidebar />
       </div>
     </div>

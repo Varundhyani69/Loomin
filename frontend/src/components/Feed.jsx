@@ -1,10 +1,11 @@
-import Posts from "./Posts"
+import Posts from "./Posts";
 
 const Feed = () => {
   return (
-    <div className="flex-1 flex flex-col items-center px-4 sm:px-6 md:px-12 py-6 md:ml-10">
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6">
       <Posts />
     </div>
-  )
-}
+  );
+};
+
 export default Feed;

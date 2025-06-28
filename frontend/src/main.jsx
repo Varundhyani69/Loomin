@@ -1,4 +1,3 @@
-// src/main.jsx
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -20,27 +19,23 @@ const socket = userId && token
   ? io(import.meta.env.VITE_SOCKET_URL, {
     withCredentials: true,
     transports: ["websocket"],
-    auth: {
-      token: token,
-    },
-    query: {
-      userId: userId,
-    },
+    auth: { token },
+    query: { userId },
     reconnection: true,
   })
   : null;
 
 if (socket) {
   socket.on("connect", () => {
-    console.log("✅ Socket connected:", socket.id);
+    console.log("Socket connected:", socket.id);
   });
 
   socket.on("connect_error", (error) => {
-    console.error("❌ Socket connection error:", error.message);
+    console.error("Socket connection error:", error.message);
   });
 
   socket.on("error", (error) => {
-    console.error("❌ Socket error:", error.message);
+    console.error("Socket error:", error.message);
   });
 }
 

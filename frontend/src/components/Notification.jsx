@@ -1,21 +1,10 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
-import { setHasNewNotification } from '@/redux/notificationSlice';
-import { Link } from 'react-router-dom'; // ✅ Make sure this is imported
+import { Link } from 'react-router-dom';
 
 const Notification = () => {
-    const dispatch = useDispatch();
     const notifications = useSelector((state) => state.notification.notifications);
-
-    const hasNewNotification = useSelector(state => state.notification.hasNewNotification);
-
-    useEffect(() => {
-        if (notifications.length > 0 && hasNewNotification) {
-            dispatch(setHasNewNotification(false));
-        }
-    }, [notifications.length, hasNewNotification, dispatch]);
-
 
     return (
         <div className="p-6 min-h-screen bg-[#121212] text-white">

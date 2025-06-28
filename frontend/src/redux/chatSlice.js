@@ -5,7 +5,6 @@ const chatSlice = createSlice({
     initialState: {
         onlineUsers: [],
         messages: [],
-        hasNewMessage: false,
     },
     reducers: {
         setOnlineUsers: (state, action) => {
@@ -21,10 +20,6 @@ const chatSlice = createSlice({
                 state.messages.push(newMsg);
             }
         }
-        ,
-        setHasNewMessage: (state, action) => {
-            state.hasNewMessage = action.payload;
-        }
     },
 });
 
@@ -32,7 +27,6 @@ export const {
     setOnlineUsers,
     setMessage,
     appendMessage,
-    setHasNewMessage // ✅ now exported
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
