@@ -20,6 +20,7 @@ const CommentDialog = ({ open, setOpen }) => {
   const [shareOpen, setShareOpen] = useState(false);
   const [followings, setFollowings] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const { selectedPost, posts } = useSelector((store) => store.post);
   const { user } = useSelector((store) => store.auth);
@@ -73,6 +74,23 @@ const CommentDialog = ({ open, setOpen }) => {
       }
     } catch (error) {
       toast.error("Bookmark failed");
+    }
+  };
+
+  const sentMessageHandler = async () => {
+    if (!text.trim()) return;
+    try {
+      const res = await axios.post(`${API_BASE_URL}/post/${selectedPost._id}/comment`, { text }, { withCredentials: true });
+      if (res.data.success) {
+        const getUpdatedPost = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, { withCredentials: true });
+        const updatedPost = getUpdatedPost.data.post;
+        dispatch(setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p)));
+        dispatch(setSelectedPost(updatedPost));
+        setText("");
+        toast.success("Comment added");
+      }
+    } catch (err) {
+      toast.error("Failed to post comment");
     }
   };
 
@@ -139,6 +157,7 @@ const CommentDialog = ({ open, setOpen }) => {
   const filteredFollowings = followings.filter(f =>
     f.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
