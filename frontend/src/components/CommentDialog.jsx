@@ -76,20 +76,42 @@ const CommentDialog = ({ open, setOpen }) => {
     }
   };
 
-  const sentMessageHandler = async () => {
-    if (!text.trim()) return;
+  const updateCaptionHandler = async () => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/post/${selectedPost._id}/comment`, { text }, { withCredentials: true });
+      const res = await axios.put(`${API_BASE_URL}/post/${selectedPost._id}/edit-caption`, { caption: editedCaption }, { withCredentials: true });
       if (res.data.success) {
-        const getUpdatedPost = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, { withCredentials: true });
-        const updatedPost = getUpdatedPost.data.post;
+        const getRes = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, { withCredentials: true });
+        const updatedPost = getRes.data.post;
         dispatch(setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p)));
         dispatch(setSelectedPost(updatedPost));
-        setText("");
-        toast.success("Comment added");
+        dispatch((dispatch, getState) => {
+          const { auth } = getState();
+          const updatedUserProfilePosts = auth.userProfile?.posts?.map(p => p._id === updatedPost._id ? updatedPost : p);
+          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
+        });
+        toast.success("Caption updated");
+        setIsEditing(false);
       }
     } catch (err) {
-      toast.error("Failed to post comment");
+      toast.error("Update failed");
+    }
+  };
+
+  const deletePostHandler = async () => {
+    try {
+      const res = await axios.delete(`${API_BASE_URL}/post/delete/${selectedPost._id}`, { withCredentials: true });
+      if (res.data.success) {
+        dispatch(setPosts(posts.filter(p => p._id !== selectedPost._id)));
+        dispatch((dispatch, getState) => {
+          const { auth } = getState();
+          const updatedUserProfilePosts = auth.userProfile?.posts?.filter(p => p._id !== selectedPost._id);
+          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
+        });
+        toast.success("Post deleted");
+        setOpen(false);
+      }
+    } catch (err) {
+      toast.error("Delete failed");
     }
   };
 
@@ -117,39 +139,6 @@ const CommentDialog = ({ open, setOpen }) => {
   const filteredFollowings = followings.filter(f =>
     f.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const updateCaptionHandler = async () => {
-    try {
-      const res = await axios.put(
-        `${API_BASE_URL}/post/${selectedPost._id}/edit-caption`,
-        { caption: editedCaption },
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        const getRes = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, {
-          withCredentials: true,
-        });
-
-        const updatedPost = getRes.data.post;
-
-        dispatch(setPosts(posts.map((p) => (p._id === updatedPost._id ? updatedPost : p))));
-        dispatch(setSelectedPost(updatedPost));
-
-        dispatch((dispatch, getState) => {
-          const { auth } = getState();
-          const updatedUserProfilePosts = auth.userProfile?.posts?.map((p) =>
-            p._id === updatedPost._id ? updatedPost : p
-          );
-          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
-        });
-
-        toast.success("Caption updated");
-        setIsEditing(false);
-      }
-    } catch (err) {
-      toast.error("Failed to update caption");
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -169,7 +158,26 @@ const CommentDialog = ({ open, setOpen }) => {
                 <span className="font-medium text-sm">{selectedPost?.author?.username}</span>
               </div>
               {isPostAuthor() && (
-                <MoreHorizontal onClick={() => setIsEditing(!isEditing)} className="cursor-pointer" />
+                <div className="relative group">
+                  <MoreHorizontal className="cursor-pointer" />
+                  <div className="absolute right-0 top-6 bg-[#2a2a2a] text-white border border-gray-700 rounded-md p-2 hidden group-hover:block z-50 text-sm min-w-[150px]">
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditedCaption(selectedPost.caption || "");
+                      }}
+                      className="flex items-center w-full text-left px-3 py-1 hover:bg-[#3a3a3a] rounded"
+                    >
+                      <Pencil className="w-4 h-4 mr-2" /> Edit Caption
+                    </button>
+                    <button
+                      onClick={deletePostHandler}
+                      className="flex items-center w-full text-left px-3 py-1 hover:bg-[#3a3a3a] rounded text-red-500"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete Post
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 
