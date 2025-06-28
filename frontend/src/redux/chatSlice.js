@@ -6,7 +6,6 @@ const chatSlice = createSlice({
         onlineUsers: [],
         messages: [],
         hasNewMessage: false,
-        newMessageFrom: [], // 🆕 users who sent unread messages
     },
     reducers: {
         setOnlineUsers: (state, action) => {
@@ -21,22 +20,10 @@ const chatSlice = createSlice({
             if (!exists) {
                 state.messages.push(newMsg);
             }
-        },
+        }
+        ,
         setHasNewMessage: (state, action) => {
             state.hasNewMessage = action.payload;
-        },
-        addNewMessageFrom: (state, action) => {
-            const senderId = action.payload;
-            if (!state.newMessageFrom.includes(senderId)) {
-                state.newMessageFrom.push(senderId);
-            }
-        },
-        clearNewMessageFrom: (state, action) => {
-            const userId = action.payload;
-            state.newMessageFrom = state.newMessageFrom.filter(id => id !== userId);
-        },
-        clearAllNewMessageFrom: (state) => {
-            state.newMessageFrom = [];
         }
     },
 });
@@ -45,10 +32,7 @@ export const {
     setOnlineUsers,
     setMessage,
     appendMessage,
-    setHasNewMessage,
-    addNewMessageFrom,
-    clearNewMessageFrom,
-    clearAllNewMessageFrom
+    setHasNewMessage // ✅ now exported
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

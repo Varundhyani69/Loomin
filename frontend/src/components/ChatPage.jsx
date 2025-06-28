@@ -7,25 +7,28 @@ import { MessageCircleCode } from 'lucide-react';
 import Messages from './Messages';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { appendMessage, setHasNewMessage, addNewMessageFrom, clearNewMessageFrom } from '@/redux/chatSlice';
+import { appendMessage, setHasNewMessage } from '@/redux/chatSlice';
 import SocketContext from '@/context/SocketContext';
 
 const ChatPage = () => {
     const { user, selectedUser } = useSelector(store => store.auth);
-    const { onlineUsers, newMessageFrom } = useSelector(store => store.chat);
+    const { onlineUsers } = useSelector(store => store.chat);
     const dispatch = useDispatch();
     const [textMessage, setTextMessage] = useState("");
     const [followings, setFollowings] = useState([]);
-    const socket = useContext(SocketContext);
+    const { socket } = useContext(SocketContext);
+
+    const [newMessageFrom, setNewMessageFrom] = useState([]);
 
     useEffect(() => {
         const fetchFollowings = async () => {
             try {
                 const res = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/user/followings`,
+                    `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/user/followings`,
                     { withCredentials: true }
                 );
                 const users = res.data.followings || [];
+
                 setFollowings(Array.isArray(users) ? users : []);
             } catch (err) {
                 toast.error("Failed to fetch followings");
@@ -45,48 +48,65 @@ const ChatPage = () => {
         const handleIncomingMessage = (newMessage) => {
             dispatch(setHasNewMessage(true));
             dispatch(appendMessage(newMessage));
+
             if (
                 newMessage?.senderId &&
                 (!selectedUser || newMessage.senderId !== selectedUser._id)
             ) {
-                dispatch(addNewMessageFrom(newMessage.senderId));
+                setNewMessageFrom(prev =>
+                    prev.includes(newMessage.senderId) ? prev : [...prev, newMessage.senderId]
+                );
             }
         };
 
+        const handleConnectError = (error) => {
+            console.error("Socket connection error:", error.message);
+            toast.error(`Socket connection failed: ${error.message}`);
+        };
+
+        const handleConnect = () => {
+            console.log("Socket connected:", socket.id);
+        };
+
         socket.on("newMessage", handleIncomingMessage);
+        socket.on("connect_error", handleConnectError);
+        socket.on("connect", handleConnect);
 
         return () => {
             socket.off("newMessage", handleIncomingMessage);
+            socket.off("connect_error", handleConnectError);
+            socket.off("connect", handleConnect);
         };
     }, [socket, dispatch, selectedUser]);
 
-    // const sendMessageHandler = async (receiverId) => {
-    //     if (!textMessage.trim()) return toast.error("Message cannot be empty");
-    //     try {
-    //         const res = await axios.post(
-    //             `${import.meta.env.VITE_API_URL}/api/v1/message/send/${receiverId}`,
-    //             { message: textMessage },
-    //             { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
-    //         );
-    //         if (res.data.success) {
-    //             dispatch(appendMessage(res.data.newMessage));
-    //             socket?.emit("newMessage", res.data.newMessage);
-    //             setTextMessage("");
-    //         } else {
-    //             toast.error(res.data.message || "Message sending failed");
-    //         }
-    //     } catch (error) {
-    //         toast.error(error.response?.data?.message || "Error sending message");
-    //     }
-    // };
+    const sendMessageHandler = async (receiverId) => {
+        if (!textMessage.trim()) return toast.error("Message cannot be empty");
+        try {
+            const res = await axios.post(
+                `${import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app"}/api/v1/message/send/${receiverId}`,
+                { message: textMessage },
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+            if (res.data.success) {
+                dispatch(appendMessage(res.data.newMessage));
+                socket?.emit("newMessage", res.data.newMessage);
+                setTextMessage("");
+            } else {
+                toast.error(res.data.message || "Message sending failed");
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Error sending message");
+        }
+    };
 
     const selectUserHandler = (userObj) => {
         dispatch(setSelectedUser(userObj));
-        dispatch(clearNewMessageFrom(userObj._id));
+        setNewMessageFrom(prev => prev.filter(id => id !== userObj._id));
     };
 
     return (
         <div className='flex h-screen'>
+            {/* Sidebar */}
             <section className="w-full md:w-1/4 h-screen overflow-y-auto bg-[#1e1e1e] text-white border-r border-gray-700 px-3 py-6">
                 <h1 className='font-bold mb-3 p-3 text-xl'>{user?.username}</h1>
                 <hr className='mb-4 border-gray-300' />
@@ -95,6 +115,7 @@ const ChatPage = () => {
                         followings.map(followedUser => {
                             const isOnline = onlineUsers.includes(followedUser?._id);
                             const hasUnread = newMessageFrom.includes(followedUser._id);
+
                             return (
                                 <div
                                     key={followedUser._id}
@@ -123,6 +144,7 @@ const ChatPage = () => {
                 </div>
             </section>
 
+            {/* Chat Area */}
             {selectedUser ? (
                 <section className="flex-1 flex flex-col h-screen bg-[#121212] text-white">
                     <div className='flex gap-3 items-center px-3 py-2 border-b border-gray-300 sticky top-0 z-10'>

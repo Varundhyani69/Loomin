@@ -7,7 +7,7 @@ import {
     Search,
     Bell
 } from 'lucide-react';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react'; // ✅ Added useContext, useEffect
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -18,7 +18,7 @@ import { setHasNewNotification } from '@/redux/notificationSlice';
 import CreatePost from './CreatePost';
 import { Dialog, DialogTrigger, DialogContent, DialogOverlay } from '@radix-ui/react-dialog';
 import { Input } from './ui/input';
-import SocketContext from '@/context/SocketContext';
+import SocketContext from '@/context/SocketContext'; // ✅ Added socket context
 
 const LeftSidebar = () => {
     const API_BASE_URL = import.meta.env.VITE_API_URL || "https://loomin-backend-production.up.railway.app";
@@ -31,28 +31,27 @@ const LeftSidebar = () => {
     const { user } = useSelector(store => store.auth);
     const { hasNewMessage } = useSelector(store => store.chat);
     const { hasNewNotification } = useSelector(store => store.notification);
-    const socket = useContext(SocketContext); // ✅ Don't destructure socket
+    const { socket } = useContext(SocketContext); // ✅ Destructure socket from context
 
-    // ✅ Listen to real-time events for red dot triggers
     useEffect(() => {
         if (!socket) return;
 
         const handleNewMessage = () => {
-            dispatch(setHasNewMessage(true));
+            dispatch(setHasNewMessage(true)); // ✅ Show red dot
         };
 
         const handleNewNotification = () => {
-            dispatch(setHasNewNotification(true));
+            dispatch(setHasNewNotification(true)); // ✅ Show red dot
         };
 
-        socket.on("newMessage", handleNewMessage);
-        socket.on("notification", handleNewNotification);
+        socket.on('newMessage', handleNewMessage);
+        socket.on('newNotification', handleNewNotification);
 
         return () => {
-            socket.off("newMessage", handleNewMessage);
-            socket.off("notification", handleNewNotification);
+            socket.off('newMessage', handleNewMessage);
+            socket.off('newNotification', handleNewNotification);
         };
-    }, [socket, dispatch]);
+    }, [socket, dispatch]); // ✅ Dependency array
 
     const logoutHandler = async () => {
         try {
@@ -75,11 +74,11 @@ const LeftSidebar = () => {
         else if (textType === 'Profile') navigate(`/profile/${user?._id}`, { replace: true });
         else if (textType === 'Home') navigate('/', { replace: true });
         else if (textType === 'Messages') {
-            dispatch(setHasNewMessage(false));
+            dispatch(setHasNewMessage(false)); // ✅ Hide red dot
             navigate('/chat', { replace: true });
         }
         else if (textType === 'Notifications') {
-            dispatch(setHasNewNotification(false));
+            dispatch(setHasNewNotification(false)); // ✅ remove red dot
             navigate('/notifications');
         }
         else if (textType === 'Search') {
