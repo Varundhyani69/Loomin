@@ -110,29 +110,29 @@ export const deletePost = async (req, res) => {
         const postId = req.params.id;
         const authorId = req.id;
 
-        console.log("🗑️ [Delete Post] ID:", postId);
+        console.log("[Delete Post] ID:", postId);
 
         const post = await Post.findById(postId);
         if (!post) {
-            console.log("❌ [Delete Post] Post not found");
+            console.log("[Delete Post] Post not found");
             return res.status(404).json({ success: false, message: "Post not found" });
         }
 
         if (post.author.toString() !== authorId.toString()) {
-            console.log("🚫 [Delete Post] Unauthorized attempt by", authorId);
+            console.log("[Delete Post] Unauthorized attempt by", authorId);
             return res.status(403).json({ success: false, message: "Unauthorized" });
         }
 
         await Post.findByIdAndDelete(postId);
-        console.log("✅ [Delete Post] Post deleted from DB");
+        console.log("[Delete Post] Post deleted from DB");
 
         const user = await User.findById(authorId);
         user.posts = user.posts.filter(p => p.toString() !== postId);
         await user.save();
-        console.log("✅ [Delete Post] Removed post reference from user");
+        console.log("[Delete Post] Removed post reference from user");
 
         await Comment.deleteMany({ post: postId });
-        console.log("✅ [Delete Post] Deleted all comments for the post");
+        console.log("[Delete Post] Deleted all comments for the post");
 
         return res.json({ success: true, message: "Post deleted" });
     } catch (error) {
@@ -143,11 +143,11 @@ export const deletePost = async (req, res) => {
 
 export const editCaption = async (req, res) => {
     try {
-        console.log("✏️ Received edit caption request");
+        console.log("Received edit caption request");
 
         const post = await Post.findById(req.params.id);
         if (!post) {
-            console.log("❌ Post not found");
+            console.log("Post not found");
             return res.json({ success: false, message: "Post not found" });
         }
 
@@ -155,15 +155,15 @@ export const editCaption = async (req, res) => {
         const userId = req.id?.toString();
 
         if (postAuthorId !== userId) {
-            console.log(`🚫 Unauthorized edit attempt by ${userId}, post belongs to ${postAuthorId}`);
+            console.log(`Unauthorized edit attempt by ${userId}, post belongs to ${postAuthorId}`);
             return res.json({ success: false, message: "Unauthorized" });
         }
 
-        console.log("✏️ Editing caption to:", req.body.caption);
+        console.log("Editing caption to:", req.body.caption);
         post.caption = req.body.caption;
         await post.save();
 
-        console.log("✅ Caption updated successfully");
+        console.log("Caption updated successfully");
         res.json({ success: true, message: "Caption updated" });
     } catch (err) {
         console.error("editCaption error:", err);
