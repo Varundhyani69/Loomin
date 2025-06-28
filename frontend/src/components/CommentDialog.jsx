@@ -117,6 +117,39 @@ const CommentDialog = ({ open, setOpen }) => {
   const filteredFollowings = followings.filter(f =>
     f.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const updateCaptionHandler = async () => {
+    try {
+      const res = await axios.put(
+        `${API_BASE_URL}/post/${selectedPost._id}/edit-caption`,
+        { caption: editedCaption },
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        const getRes = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, {
+          withCredentials: true,
+        });
+
+        const updatedPost = getRes.data.post;
+
+        dispatch(setPosts(posts.map((p) => (p._id === updatedPost._id ? updatedPost : p))));
+        dispatch(setSelectedPost(updatedPost));
+
+        dispatch((dispatch, getState) => {
+          const { auth } = getState();
+          const updatedUserProfilePosts = auth.userProfile?.posts?.map((p) =>
+            p._id === updatedPost._id ? updatedPost : p
+          );
+          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
+        });
+
+        toast.success("Caption updated");
+        setIsEditing(false);
+      }
+    } catch (err) {
+      toast.error("Failed to update caption");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
