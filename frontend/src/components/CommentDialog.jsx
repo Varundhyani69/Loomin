@@ -1,3 +1,4 @@
+// Your imports (unchanged)
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Dialog, DialogContent, DialogOverlay, DialogTrigger } from "@radix-ui/react-dialog";
 import { MoreHorizontal, Trash2, Pencil, MessageCircle, Send, Bookmark } from "lucide-react";
@@ -76,6 +77,34 @@ const CommentDialog = ({ open, setOpen }) => {
     }
   };
 
+  const updateCaptionHandler = async () => {
+    try {
+      const res = await axios.put(`${API_BASE_URL}/post/${selectedPost._id}/edit-caption`, {
+        caption: editedCaption,
+      }, { withCredentials: true });
+
+      if (res.data.success) {
+        const getRes = await axios.get(`${API_BASE_URL}/post/${selectedPost._id}`, { withCredentials: true });
+        const updatedPost = getRes.data.post;
+
+        dispatch(setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p)));
+        dispatch(setSelectedPost(updatedPost));
+        dispatch((dispatch, getState) => {
+          const { auth } = getState();
+          const updatedUserProfilePosts = auth.userProfile?.posts?.map(p =>
+            p._id === updatedPost._id ? updatedPost : p
+          );
+          dispatch(setUserProfile({ ...auth.userProfile, posts: updatedUserProfilePosts }));
+        });
+
+        toast.success("Caption updated");
+        setIsEditing(false);
+      }
+    } catch (err) {
+      toast.error("Failed to update caption");
+    }
+  };
+
   const sentMessageHandler = async () => {
     if (!text.trim()) return;
     try {
@@ -123,10 +152,14 @@ const CommentDialog = ({ open, setOpen }) => {
       <DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
       <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[90vh] overflow-hidden p-0 bg-[#1e1e1e] text-white rounded-xl shadow-2xl z-50">
         <div className="flex flex-col md:flex-row h-full">
+          {/* Image Side */}
           <div className="w-full md:w-1/2 h-64 md:h-full">
             <img className="w-full h-full object-contain md:object-cover rounded-t-xl md:rounded-l-xl md:rounded-tr-none" src={selectedPost?.image || ""} alt="post_img" />
           </div>
+
+          {/* Content Side */}
           <div className="w-full md:w-1/2 flex flex-col p-4">
+            {/* Top User Info */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <Avatar>
@@ -140,6 +173,7 @@ const CommentDialog = ({ open, setOpen }) => {
               )}
             </div>
 
+            {/* Caption */}
             {isEditing ? (
               <div className="flex gap-2 mb-4">
                 <input
@@ -154,12 +188,14 @@ const CommentDialog = ({ open, setOpen }) => {
               <p className="text-sm text-gray-300 mb-4">{selectedPost?.caption}</p>
             )}
 
-            <div className="flex-1 overflow-y-auto space-y-2 mb-4 custom-scroll">
+            {/* Comments with Scroll */}
+            <div className="flex-1 overflow-y-auto space-y-2 mb-4 max-h-[250px] pr-2">
               {selectedPost?.comments?.map((comment) => (
                 <Comment key={comment._id} comment={comment} />
               ))}
             </div>
 
+            {/* Footer Actions */}
             <div className="mt-auto">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-4">
@@ -213,8 +249,10 @@ const CommentDialog = ({ open, setOpen }) => {
                 />
               </div>
 
+              {/* Like Count */}
               <div className="text-sm text-gray-300 mb-2">{likesCount} likes</div>
 
+              {/* Comment Input */}
               <div className="flex gap-2 items-center">
                 <input
                   type="text"
