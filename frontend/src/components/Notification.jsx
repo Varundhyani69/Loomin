@@ -46,7 +46,7 @@ const Notification = () => {
                                 <Link to={`/profile/${senderId}`} className="flex items-center gap-4">
                                     <Avatar>
                                         <AvatarImage
-                                            className="h-12 w-12 rounded-full"
+                                            className="h-12 w-12 rounded-full object-cover"
                                             src={profilePicture}
                                             alt={username}
                                         />
