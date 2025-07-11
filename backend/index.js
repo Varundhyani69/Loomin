@@ -31,9 +31,11 @@ app.use(
     cors({
         origin: (origin, callback) => {
             const allowedOrigins = [
+                "https://loomin.onrender.com",
                 "http://localhost:5173",
                 "https://loomin-production.up.railway.app",
                 "https://loomin-backend-production.up.railway.app",
+
             ];
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
